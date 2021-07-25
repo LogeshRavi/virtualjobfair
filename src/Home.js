@@ -22,12 +22,7 @@ class Home extends Component {
 		
 	} 
 
-	onSubmit = (data) =>{
-		axios.get('http://localhost:4001/api/getschedule',data)
-		.then(res=>{
-			console.log(res)
-		})
-	}
+	
 
 	
 
@@ -203,7 +198,7 @@ class Home extends Component {
 
 				<div className="container3">
 					<p style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}>Join or create a new meeting</p>
-					<Input placeholder="Enter meeting URL here" onChange={e => this.handleChange(e)} onSubmit={data =>this.onSubmit(data)} />
+					<Input placeholder="Enter meeting URL here" onChange={e => this.handleChange(e)}  />
 					
 					<button variant="contained"  onClick={this.join} style={{ margin: "20px" }}></button>
 				</div>
