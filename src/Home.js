@@ -1,30 +1,30 @@
 import React, { Component } from 'react';
 import {OBJ} from './Schedule'; 
 import { Input, Button, IconButton } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
+import TextField from '@material-ui/core/TextField';
 import "./Home.css"
 import axios from 'axios'
  
-
+const useStyles = makeStyles({
+	textField: {
+	  paddingTop: "500px"
+	},
+});
 
 class Home extends Component {
   	constructor (props) {
 		super(props)
 		this.state = {
 			url: '',
-			meetingId:"fgh"
+			url1: '',
+			Time: '',
+			Time1: ''
 		}
 		console.log(OBJ);
 	}
 
-	handleChange = (e) =>{ 
-		this.setState({ url: e.target.value })
-		
-		
-	} 
-
-	
-
-	
+	handleChange = (e) => this.setState({ url: e.target.value })
 
 	
 
@@ -148,15 +148,15 @@ class Home extends Component {
 
 		// get input time
 		
-		var date = new Date('2021.07.24 18:00');
+		var date = new Date('2021.07.23 10:10');
 		var inputTime1 = Math.floor(date.getTime() / 1000);
 		//  var inputTime1 = new Date("09/07/2021 10:05:00 AM").getTime()
 		 console.log(inputTime1);
 
-		 var date1 = new Date('2021.07.24 18:50');
+		 var date1 = new Date('2021.07.16 10:40');
 		 var inputTime2 = Math.floor(date1.getTime() / 1000);
-		  //var inputTime1 = new Date("09/07/2021 10:05:00 AM").getTime()
-		  console.log(inputTime2);
+		 //  var inputTime1 = new Date("09/07/2021 10:05:00 AM").getTime()
+		console.log(inputTime2);
 		// 	const date2 = new Date(cred*1000);
 		// //	var date= cred;
 		// 	var hours = date2.getHours(); // minutes part from the timestamp
@@ -179,28 +179,85 @@ class Home extends Component {
 		
 		if (this.state.url !== "") {
 			var url = this.state.url.split("/")
-			window.location.href = `/${url[url.length-1]}`
+			window.location.href = `/join/${url[url.length-1]}`
 		} else {
 			var url = Math.random().toString(36).substring(2, 7)
-			window.location.href = `/${url}`
+			window.location.href = `/join/${url}`
 	} 
 }
+
+
+		urlChange = (f) => this.setState({ url1: f.target.value })
+
+
+		create = async () => {
+			if (this.state.url1 !== "") {
+				var url1 = this.state.url1.split("/")
+				window.location.href = `/join/${url1}`
+			} else {
+				var url1 = Math.random().toString(36).substring(2, 7)
+				window.location.href = `/join/${url1}`
+		} 
+		var element = document.getElementById("startDate").value;
+		console.log(element);
+		var element1 = document.getElementById("endDate").value;
+		console.log(element1);
+		var userName = document.getElementById("username").value;
+		console.log(userName);
+		
+
+
+		const data = {
+			mettingId:this.state.url1,
+			startTime:element,
+			endTime:element1,
+			host:userName
+		}
+
+		await axios.post('http://localhost:4001/api/createMeeting',data)
+	 	.then(res=>{
+              console.log(res.data)
+		 })
+
+
+		}
+
+		
 
 
 	render() {
 		return (
 			<div className="container2">
 				
-				<div>
+				<div className="boxHead">
 					<h1 style={{ fontSize: "45px" }}>Video Meeting</h1>
 					<p style={{ fontWeight: "200" }}>Video conference website that lets you stay in touch with all your friends.</p>
 				</div>
 
 				<div className="container3">
 					<p style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}>Join or create a new meeting</p>
-					<Input placeholder="Enter meeting URL here" onChange={e => this.handleChange(e)}  />
-					
-					<button variant="contained"  onClick={this.join} style={{ margin: "20px" }}></button>
+					<div className="meetJoin">
+
+					<input placeholder="Enter meeting URL here"  variant="outlined"  onChange={e => this.handleChange(e)} />
+					<button variant="contained"  onClick={this.join} style={{ margin: "20px" }}>Join</button>
+
+					</div>
+					<div className="division">
+
+                      <span className="division1"></span>
+                      <span>or</span>
+                      <span className="division2"></span>
+
+                    </div>
+					<div className="meetCreate">
+
+					<input placeholder="Enter meeting name here"  variant="outlined" onChange={f => this.urlChange(f)} />
+					<input id="username" placeholder="Enter username" variant="contained"></input>
+  					<input id="startDate" type="datetime-local"  ></input>
+					<input id="endDate" type="datetime-local"  ></input>
+					<button variant="contained"  onClick={this.create} style={{ margin: "20px" }}>Create</button>
+
+					</div>
 				</div>
 				<div style={{
 					background: "white", width: "30%", height: "auto", padding: "20px", minWidth: "400px",
