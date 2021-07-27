@@ -149,16 +149,10 @@ class Video extends Component {
 		console.log(cred1);
 
 
-		// host ===[ userDetails]{
-
-		// }
-		// esle{
-
-		// }
+		
 
 		if (this.state.userMeet === this.state.url ) {
 			//	get system local time
-			
 			const date1 = new Date();
 			const time = date1.toTimeString().split(' ')[0].split(':');
 			var currentTime = (time[0] + ':' + time[1])
@@ -183,9 +177,13 @@ class Video extends Component {
 
 			
 			if (currentTime >= inputTime && currentTime < inputTime2) {
+				if(this.state.userDetails.indexOf(this.state.host)!==-1){
 				localStorage.setItem("newChat", JSON.stringify("started"));
 				await this.getPermissions();
-			
+				}
+				else{
+					console.log("Waiting for host to start Meeting!!! ")
+				}
 		 } else if (currentTime >= inputTime2) {
                 window.location.href = "/meetEnd"
 				//alert("The Meet End!!");
@@ -492,12 +490,15 @@ class Video extends Component {
 	}
 
 	connect = () => { 
+
+	
 		this.setState({ askForUsername: false }, () => this.getMedia());
 		let name= this.state.username;
 		let users=[this.state.username];
 		let users1=[...users];
 		users1.push(name);
 		console.log(users1);
+		
 	};
 
 	connectToSocketServer = () => {
@@ -536,6 +537,7 @@ class Video extends Component {
 					this.setState({userDetails: connections1});
 					console.log("HOST :"+this.state.userDetails[0]);
 					console.log(this.state.userDetails);
+					this.checkPermission()
 					
 				})
 
