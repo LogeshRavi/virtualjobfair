@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import io from 'socket.io-client';
+import * as io from 'socket.io-client';
 import faker from "faker";
-import { withRouter } from 'react-router-dom';
 
-import { OBJ } from './Schedule';
-import { IconButton, Badge, Input, Button } from '@material-ui/core'
+import axios from 'axios'
+import {OBJ} from './Schedule'; 
+import {IconButton, Badge, Input, Button} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -12,8 +12,10 @@ import MicOffIcon from '@material-ui/icons/MicOff'
 import ScreenShareIcon from '@material-ui/icons/ScreenShare'
 import StopScreenShareIcon from '@material-ui/icons/StopScreenShare'
 import CallEndIcon from '@material-ui/icons/CallEnd'
-import ChatIcon from '@material-ui/icons/Chat'
-import axios from 'axios'
+import ChatIcon from '@material-ui/icons/Chat';
+import FullscreenIcon from '@material-ui/icons/Fullscreen';
+import PeopleIcon from '@material-ui/icons/People';
+import { Route } from 'react-router-dom'
 import { message } from 'antd'
 import 'antd/dist/antd.css'
 
@@ -22,16 +24,16 @@ import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
 
-var server_url = process.env.NODE_ENV === 'production' ? 'http://localhost:4001' : "http://localhost:4001"
+
+// import {toast} from 
+
+var server_url = process.env.NODE_ENV === 'production' ? 'http://localhost:4001' : "http://localhost:4001";
+
+var client_url = process.env.NODE_ENV === 'production' ? 'http://localhost:3000' : "http://localhost:3000";
 
 var connections = {}
-const peerConnectionConfig =
-//{
-// 	'iceServers': [
-// 		// { 'urls': 'stun:stun.services.mozilla.com' },
-// 		{ 'urls': 'stun:stun.l.google.com:19302' },
-// 	]
-// }
+const peerConnectionConfig = 
+
 {
 
 	iceServers: [{ urls: ["stun:ss-turn2.xirsys.com"] },
@@ -52,50 +54,54 @@ var elms = 0
 
 
 class Video extends Component {
-
-
 	_isMounted = false;
 	constructor(props) {
-		
 		super(props)
-		
+
 		this.localVideoref = React.createRef()
+
 		this.videoAvailable = false
 		this.audioAvailable = false
-       
+
 		this.state = {
 			userMeet: this.props.match.params.url,
-			
 			video: false,
 			audio: false,
 			screen: false,
 			showModal: false,
+			showModal1: false,
 			screenAvailable: false,
 			messages: [],
 			message: "",
 			newmessages: 0,
 			askForUsername: true,
 			username: faker.internet.userName(),
-			hbfhb: "",
+			Name: "",
+			connections1: [],
+			userDetails: "",
+			userNames: "",
+			userNumbers: "",
 			url : "",
 			startTime1 :"",
 			endTime1 :"",
 			endTime2 :"",
-			difference:""
+			difference:"",
+			showPopup : false,
+			url5:this.props.match.params.url,
+			host:""
+
 		}
 		this.schedule()
 		console.log(this.state.userMeet);
 		connections = {}
-		
 		// this.getPermissions();
+		//this.checkPermission();
 		
-		// componentDidMount(){
-		// 	this.clickMe = this.clickMe.bind(this);
-		//   }
-
 	}
 
-	schedule = () =>{
+	
+	
+  	schedule = async() =>{
 
 		const data = {
 			mettingId : this.state.userMeet
@@ -104,7 +110,7 @@ class Video extends Component {
 		// let url = ''
 		// let startTime1 = ''
 		// let endTime1 = ''
-	    axios.post('http://localhost:4001/api/getschedule',data)
+	   await axios.post('http://localhost:4001/api/getschedule',data)
 		.then(res=>{
 			if (this._isMounted) {
 				if(res.data.StatusCode== 200){
@@ -112,7 +118,8 @@ class Video extends Component {
 			this.setState({
 				url:res.data.MeetingDetails.mettingId,
 				startTime1:res.data.MeetingDetails.startTime,
-				endTime1:res.data.MeetingDetails.endTime
+				endTime1:res.data.MeetingDetails.endTime,
+				host:res.data.MeetingDetails.host
 			})
 		}
 		else{
@@ -126,32 +133,11 @@ class Video extends Component {
 	}
 
 
-  
-
+	
 	checkPermission = async () => {
 		
 		console.log(this.state.startTime1,this.state.endTime1,this.state.url)
 		const { history } = this.props;
-		// var newArray = OBJ.Meeting.filter(function (value) {
-		// 	return value.meetingTime === 1626951000
-		// }).map(function (value) { return value.meetingTime });
-		// console.log(newArray);
-		// var cred;
-		// newArray.forEach(function (e) {
-		// 	cred = e.toString()
-		// })
-		// console.log(cred);
-
-		// var newArray2 = OBJ.Meeting.filter(function (value) {
-		// 	return value.endTime === 1626951600
-		// }).map(function (value) { return value.endTime });
-		// console.log(newArray2);
-		// var cred2;
-		// newArray2.forEach(function (e) {
-		// 	cred2 = e.toString()
-		// })
-		// console.log(cred2);
-
 		var newArray1 = OBJ.Meeting.filter(function (value) {
 			return value.id === "fgh"
 		}).map(function (value) { return value.id });
@@ -161,6 +147,14 @@ class Video extends Component {
 			cred1 = e.toString()
 		})
 		console.log(cred1);
+
+
+		// host ===[ userDetails]{
+
+		// }
+		// esle{
+
+		// }
 
 		if (this.state.userMeet === this.state.url ) {
 			//	get system local time
@@ -178,6 +172,7 @@ class Video extends Component {
 			var minutes = date2.getMinutes(); // seconds part from the timestamp
 			var inputTime = pad(hours) + ':' + pad(minutes);
 			console.log(inputTime);
+
 			// //end time
 			// const pad = num => ("0" + num).slice(-2);
 			const date3 = new Date(this.state.endTime1 * 1000);
@@ -186,11 +181,14 @@ class Video extends Component {
 			var inputTime2 = pad(hours) + ':' + pad(minutes);
 			console.log(inputTime2);
 
+			
 			if (currentTime >= inputTime && currentTime < inputTime2) {
 				localStorage.setItem("newChat", JSON.stringify("started"));
 				await this.getPermissions();
-			} else if (currentTime >= inputTime2) {
-				alert("The Meet End!!");
+			
+		 } else if (currentTime >= inputTime2) {
+                window.location.href = "/meetEnd"
+				//alert("The Meet End!!");
 			}
 			else {
 				alert("The Meet doesn't start");
@@ -208,41 +206,36 @@ class Video extends Component {
 
 	}
 
-
-
-
-
 	async  componentDidMount() {
-	try{
-		this._isMounted = true;
-	
-	  	setTimeout(() => {
-			this.checkPermission()
-		}, 2000);
+		try{
+			this._isMounted = true;
 		
-	 await setTimeout(()=>{
-			var endTime = this.state.endTime1
-			var date = new Date();
-			var currentTime = Math.floor(date.getTime() / 1000);
-			console.log(currentTime)
-			var diff = endTime - currentTime
-			console.log(diff)
-			this.setState({difference:diff}
-				,
-				()=>{
-					this.diff(this.state.difference)
-				}
-				)
-			var rem5 = (diff - 300) 
-			this.setState({endTime2:rem5} // 12:40 - 12:53  = 13 - 5 = 48
-				,    
-				()=>{
-					this.end(this.state.endTime2)
-				}
-				)
-		},2000);
-	
-	//    setTimeout(() => {
+			  setTimeout(() => {
+				this.checkPermission()
+			}, 2000);
+			
+		 await setTimeout(()=>{
+				var endTime = this.state.endTime1
+				var date = new Date();
+				var currentTime = Math.floor(date.getTime() / 1000);
+				console.log(currentTime)
+				var diff = endTime - currentTime
+				console.log(diff)
+				this.setState({difference:diff}
+					,
+					()=>{
+						this.diff(this.state.difference)
+					}
+					)
+				var rem5 = (diff - 300) 
+				this.setState({endTime2:rem5} // 12:40 - 12:53  = 13 - 5 = 48
+					,    
+					()=>{
+						this.end(this.state.endTime2)
+					}
+					)
+			},2000);
+		//    setTimeout(() => {
 	// 		console.log("Meeting Will Ended in 5mins")
 	// 	}, this.state.endTime2);//0 
 	}
@@ -260,15 +253,20 @@ class Video extends Component {
 		this._isMounted = false;
 		
 	  }
-
 	  end = (e) =>{
         console.log("rem 5min " + e)
 			   setTimeout(() => {
+				 this.togglePop()
 			console.log("Meeting Will Ended in 5mins")
 		}, e*1000);
 	   
 	  }
 
+	  togglePop(){
+		this.setState({
+		  showPopup : !this.state.showPopup
+		});
+	}
 	  diff = (e) =>{
         console.log("end in "+e)
 			   setTimeout(() => {
@@ -277,10 +275,11 @@ class Video extends Component {
 		}, e*1000);
 	   
 	  }
-	  
 
+
+	
 	getPermissions = async () => {
-		try {
+		try{
 			await navigator.mediaDevices.getUserMedia({ video: true })
 				.then(() => this.videoAvailable = true)
 				.catch(() => this.videoAvailable = false)
@@ -301,13 +300,13 @@ class Video extends Component {
 						window.localStream = stream
 						this.localVideoref.current.srcObject = stream
 					})
-					.then((stream) => { })
+					.then((stream) => {})
 					.catch((e) => console.log(e))
 			}
-		} catch (e) { console.log(e) }
+		} catch(e) { console.log(e) }
 	}
 
-
+	
 
 	getMedia = () => {
 		this.setState({
@@ -323,20 +322,20 @@ class Video extends Component {
 		if ((this.state.video && this.videoAvailable) || (this.state.audio && this.audioAvailable)) {
 			navigator.mediaDevices.getUserMedia({ video: this.state.video, audio: this.state.audio })
 				.then(this.getUserMediaSuccess)
-				.then((stream) => { })
+				.then((stream) => {})
 				.catch((e) => console.log(e))
 		} else {
 			try {
 				let tracks = this.localVideoref.current.srcObject.getTracks()
 				tracks.forEach(track => track.stop())
-			} catch (e) { }
+			} catch (e) {}
 		}
 	}
 
 	getUserMediaSuccess = (stream) => {
 		try {
 			window.localStream.getTracks().forEach(track => track.stop())
-		} catch (e) { console.log(e) }
+		} catch(e) { console.log(e) }
 
 		window.localStream = stream
 		this.localVideoref.current.srcObject = stream
@@ -358,30 +357,30 @@ class Video extends Component {
 		stream.getTracks().forEach(track => track.onended = () => {
 			this.setState(
 				{
-					video: false,
-					audio: false,
-				}, () => {
-					try {
-						let tracks = this.localVideoref.current.srcObject.getTracks()
-						tracks.forEach(track => track.stop())
-					} catch (e) { console.log(e) }
+				video: false,
+				audio: false,
+			}, () => {
+				try {
+					let tracks = this.localVideoref.current.srcObject.getTracks()
+					tracks.forEach(track => track.stop())
+				} catch(e) { console.log(e) }
 
-					let blackSilence = (...args) => new MediaStream([this.black(...args), this.silence()])
-					window.localStream = blackSilence()
-					this.localVideoref.current.srcObject = window.localStream
+				let blackSilence = (...args) => new MediaStream([this.black(...args), this.silence()])
+				window.localStream = blackSilence()
+				this.localVideoref.current.srcObject = window.localStream
 
-					for (let id in connections) {
-						connections[id].addStream(window.localStream)
+				for (let id in connections) {
+					connections[id].addStream(window.localStream)
 
-						connections[id].createOffer().then((description) => {
-							connections[id].setLocalDescription(description)
-								.then(() => {
-									socket.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
-								})
-								.catch(e => console.log(e))
-						})
-					}
-				})
+					connections[id].createOffer().then((description) => {
+						connections[id].setLocalDescription(description)
+							.then(() => {
+								socket.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
+							})
+							.catch(e => console.log(e))
+					})
+				}
+			})
 		})
 	}
 
@@ -390,7 +389,7 @@ class Video extends Component {
 			if (navigator.mediaDevices.getDisplayMedia) {
 				navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
 					.then(this.getDislayMediaSuccess)
-					.then((stream) => { })
+					.then((stream) => {})
 					.catch((e) => console.log(e))
 			}
 		}
@@ -399,7 +398,7 @@ class Video extends Component {
 	getDislayMediaSuccess = (stream) => {
 		try {
 			window.localStream.getTracks().forEach(track => track.stop())
-		} catch (e) { console.log(e) }
+		} catch(e) { console.log(e) }
 
 		window.localStream = stream
 		this.localVideoref.current.srcObject = stream
@@ -425,7 +424,7 @@ class Video extends Component {
 				try {
 					let tracks = this.localVideoref.current.srcObject.getTracks()
 					tracks.forEach(track => track.stop())
-				} catch (e) { console.log(e) }
+				} catch(e) { console.log(e) }
 
 				let blackSilence = (...args) => new MediaStream([this.black(...args), this.silence()])
 				window.localStream = blackSilence()
@@ -468,7 +467,7 @@ class Video extends Component {
 
 		let height = String(100 / elms) + "%"
 		let width = ""
-		if (elms === 0 || elms === 1) {
+		if(elms === 0 || elms === 1) {
 			width = "100%"
 			height = "100%"
 		} else if (elms === 2) {
@@ -489,19 +488,33 @@ class Video extends Component {
 			videos[a].style.setProperty("height", height)
 		}
 
-		return { minWidth, minHeight, width, height }
+		return {minWidth, minHeight, width, height}
 	}
+
+	connect = () => { 
+		this.setState({ askForUsername: false }, () => this.getMedia());
+		let name= this.state.username;
+		let users=[this.state.username];
+		let users1=[...users];
+		users1.push(name);
+		console.log(users1);
+	};
 
 	connectToSocketServer = () => {
 		socket = io.connect(server_url, { secure: true })
 
-		socket.on('signal', this.gotMessageFromServer)
+		socket.on('signal', this.gotMessageFromServer);
+
+		
 
 		socket.on('connect', () => {
 			socket.emit('join-call', window.location.href)
-			socketId = socket.id
+			socketId = socket.id;
+			
 
 			socket.on('chat-message', this.addMessage)
+
+			
 
 			socket.on('user-left', (id) => {
 				let video = document.querySelector(`[data-socket="${id}"]`)
@@ -515,6 +528,17 @@ class Video extends Component {
 			})
 
 			socket.on('user-joined', (id, clients) => {
+				console.log(clients);
+
+				socket.emit('new-user', this.state.username);
+
+				socket.on('user-array', (connections1) => {
+					this.setState({userDetails: connections1});
+					console.log("HOST :"+this.state.userDetails[0]);
+					console.log(this.state.userDetails);
+					
+				})
+
 				clients.forEach((socketListId) => {
 					connections[socketListId] = new RTCPeerConnection(peerConnectionConfig)
 					// Wait for their ice candidate       
@@ -537,11 +561,9 @@ class Video extends Component {
 
 							let video = document.createElement('video')
 
-							let css = {
-								minWidth: cssMesure.minWidth, minHeight: cssMesure.minHeight, maxHeight: "100%", margin: "10px",
-								borderStyle: "solid", borderColor: "#bdbdbd", objectFit: "fill"
-							}
-							for (let i in css) video.style[i] = css[i]
+							let css = {minWidth: cssMesure.minWidth, minHeight: cssMesure.minHeight, maxHeight: "100%", margin: "10px",
+								borderStyle: "solid", borderColor: "#bdbdbd", objectFit: "fill"}
+							for(let i in css) video.style[i] = css[i]
 
 							video.style.setProperty("width", cssMesure.width)
 							video.style.setProperty("height", cssMesure.height)
@@ -567,11 +589,11 @@ class Video extends Component {
 				if (id === socketId) {
 					for (let id2 in connections) {
 						if (id2 === socketId) continue
-
+						
 						try {
 							connections[id2].addStream(window.localStream)
-						} catch (e) { }
-
+						} catch(e) {}
+			
 						connections[id2].createOffer().then((description) => {
 							connections[id2].setLocalDescription(description)
 								.then(() => {
@@ -608,7 +630,7 @@ class Video extends Component {
 		try {
 			let tracks = this.localVideoref.current.srcObject.getTracks()
 			tracks.forEach(track => track.stop())
-		} catch (e) { }
+		} catch (e) {}
 		window.location.href = "/"
 	}
 
@@ -625,7 +647,9 @@ class Video extends Component {
 		}
 	}
 
-	handleUsername = (e) => this.setState({ username: e.target.value })
+	handleUsername = (e) => {
+		this.setState({ username: e.target.value });
+	}
 
 	sendMessage = () => {
 		socket.emit('chat-message', this.state.message, this.state.username)
@@ -656,117 +680,217 @@ class Video extends Component {
 		})
 	}
 
-	connect = () => this.setState({ askForUsername: false }, () => this.getMedia())
+	
 
-	// isChrome = function () {
-	// 	let userAgent = (navigator && (navigator.userAgent || '')).toLowerCase()
-	// 	let vendor = (navigator && (navigator.vendor || '')).toLowerCase()
-	// 	let matchChrome = /google inc/.test(vendor) ? userAgent.match(/(?:chrome|crios)\/(\d+)/) : null
-	// 	// let matchFirefox = userAgent.match(/(?:firefox|fxios)\/(\d+)/)
-	// 	// return matchChrome !== null || matchFirefox !== null
-	// 	return matchChrome !== null
-	// }
+	toggleFullScreen= () => {
+		if (!document.fullscreenElement) {
+			document.documentElement.requestFullscreen(this.localVideoref);
+		} else {
+		  if (document.exitFullscreen) {
+			document.exitFullscreen();
+		  }
+		}
+	  }
 
+	 countTimers = () => {
+		var timerVar = setInterval(countTimer, 1000);
+		var totalSeconds = 0;
+		function countTimer() {
+		++totalSeconds;
+		var hour = Math.floor(totalSeconds /3600);
+		var minute = Math.floor((totalSeconds - hour*3600)/60);
+		var seconds = totalSeconds - (hour*3600 + minute*60);
+		if(hour < 10)
+		  hour = "0"+hour;
+		if(minute < 10)
+		  minute = "0"+minute;
+		if(seconds < 10)
+		  seconds = "0"+seconds;
+		document.getElementById("timer").innerHTML = hour + ":" + minute + ":" + seconds;
+		}
+	 }
+
+	 users = () => {
+		console.log(this.state.userDetails);
+	    var Details = this.state.userDetails.toString();
+		console.log(Details);
+		this.setState({userNames: Details});
+		var numberOfUsers = this.state.userDetails.length;
+		this.setState({userNumbers: numberOfUsers});
+		console.log(this.state.userNumbers);
+		this.setState({showModal1: true});
+	}
+
+	closeUser= () => {
+		this.setState({ showModal1: false })
+	}
+	 
 
 
 	render() {
-		// if(this.isChrome() === false){
-		// 	return (
-		// 		<div style={{background: "white", width: "30%", height: "auto", padding: "20px", minWidth: "400px",
-		// 				textAlign: "center", margin: "auto", marginTop: "50px", justifyContent: "center"}}>
-		// 			<h1>Sorry, this works only with Google Chrome</h1>
-		// 		</div>
-		// 	)
-		// }
 		return (
-			<div>
-				{
-					this.state.endTime2 != 0 ? console.log(this.state.endTime2):''
+           <div>
+              {/* {this.state.showPopup} ? <Popup closePopup = {this.togglePop}></Popup> : "" */}
 
-				}
+
+
+
 				{this.state.askForUsername === true ?
-					<div>
-						<div style={{
-							background: "white", width: "30%", height: "auto", padding: "20px", minWidth: "400px",
-							textAlign: "center", margin: "auto", marginTop: "50px", justifyContent: "center"
-						}}>
-							<p style={{ margin: 0, fontWeight: "bold", paddingRight: "50px" }}>Set your username</p>
-							<Input placeholder="Username" value={this.state.username} onChange={e => this.handleUsername(e)} />
-							<Button variant="contained" color="primary" onClick={this.connect} style={{ margin: "20px" }}>Connect</Button>
+					<div className="joinPage">
+
+						<div className="videoBox">
+							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
+								width: "700px",height: "450px"}}></video>
 						</div>
 
-						<div style={{ justifyContent: "center", textAlign: "center", paddingTop: "40px" }}>
-							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-								borderStyle: "solid", borderColor: "#bdbdbd", objectFit: "fill", width: "60%", height: "30%"
-							}}></video>
+						<div className="videoContainer1">
+							<div className="videoContainer2" >
+
+								<p>Enter your username and create the meeting</p>
+								<input placeholder="username"  variant="filled" value={this.state.username} onChange={e => this.handleUsername(e)} />
+								<button variant="contained" color="primary" onClick={this.connect} style={{ margin: "20px" }}>Join</button>
+
+							</div>
+
+							<div className="videoContainer3">
+
+								<p>Meeting link</p>
+								<input  variant="filled" value={window.location.href} disable="true" />
+								<button variant="contained" color="primary" onClick={this.copyUrl} style={{ margin: "20px" }}>Copy</button>
+							
+							</div>
 						</div>
+
+						
 					</div>
 					:
 					<div>
-						<div className="btn-down" style={{ backgroundColor: "whitesmoke", color: "whitesmoke", textAlign: "center" }}>
-							<IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
-								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
-							</IconButton>
+						<div className="btn-down">
+						</div>
+						<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
+								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
+									objectFit: "fill", width: "1206px",height: "510px"}}></video>
+							</Row>
+							
+							<div className="videoFooter">
 
-							<IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
-								<CallEndIcon />
-							</IconButton>
-
-							<IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+							<div className="videoTimer">
+							<span className="url">{this.state.userMeet}</span>
+							<span className="constant">|</span>
+							<span id="timer" ref={this.countTimers}></span>
+							</div>
+							
+							<div className="micDiv">
+							<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
 								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-							</IconButton>
+							</IconButton></span>
+							<span className="micText"><p>Mic</p></span>
+							</div>
+							
+							
+							<div className="videoDiv">
+							<span className="Videocam"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
+								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+								</IconButton></span>
+							<span className="videoText"><p>Video</p></span>
+							</div>
+							
+					
+							<div className="callEndDiv">
+							<span className="callEnd"><IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
+								<CallEndIcon />
+							</IconButton></span>
+							<span className="callEndText"><p>End Call</p></span>
+							</div>
+							
+							
 
-							{this.state.screenAvailable === true ?
+							<div className="screenShareDiv">
+							<span className="screenShare">{this.state.screenAvailable === true ?
 								<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
 									{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
 								</IconButton>
 								: null}
+								</span>
+								<span className="screenShareText"><p>Screen Share</p></span>
+							</div>
 
-							<Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
+							<div className="participantDiv">
+							<span className="participant">
+								<IconButton style={{ color: "#424242" }} onClick={this.users}>
+									<PeopleIcon />
+								</IconButton>
+							</span>
+							<span className="participantText">
+								<p>Participants</p>
+								</span>
+							</div>
+							
+							<div className="chatIconDiv">
+							<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
 								<IconButton style={{ color: "#424242" }} onClick={this.openChat}>
 									<ChatIcon />
 								</IconButton>
-							</Badge>
-						</div>
+							</Badge></span>
+							<span className="chatIconText"><p>Chat</p></span>
+							</div>
 
-						<Modal show={this.state.showModal} onHide={this.closeChat} style={{ zIndex: "999999" }}>
-							<Modal.Header closeButton>
-								<Modal.Title>Chat Room</Modal.Title>
+							<div className="fullScreenDiv">
+							<span className="fullScreen">
+								<IconButton style={{ color: "#424242" }} onClick={this.toggleFullScreen}>
+									< FullscreenIcon />
+								</IconButton>
+							</span>
+							<span className="fullScreenText"><p>Full Screen</p></span>
+							</div>
+							</div>
+							
+					<div className="user-container">
+						<Modal className="user" show={this.state.showModal1} onHide={this.closeUser} style={{ zIndex: "999999" }}>
+							<Modal.Header className="userHeader">
+								<div className = "userTitle">
+								<Modal.Title>Participants</Modal.Title>
+								<div className="userStatic">
+								<p>{this.state.userNumbers}</p>
+								<p>participants</p>
+								</div>
+								</div>
+								<button onClick={this.closeUser}></button>
+							</Modal.Header>
+							<Modal.Body className="userBody" style={{ overflow: "auto", overflowY: "auto", height: "500px", textAlign: "left" }} >
+								<p>{this.state.userNames}</p>
+							</Modal.Body>
+						</Modal>
+					</div>
+						
+					<div className="popup-container">
+						<Modal className="popup" show={this.state.showModal} onHide={this.closeChat} style={{ zIndex: "999999" }}>
+							<Modal.Header className="modelHeader">
+								<Modal.Title>Chat</Modal.Title>
+								<button onClick={this.closeChat}></button>
 							</Modal.Header>
 							<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
 								{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
-									<div key={index} style={{ textAlign: "left" }}>
+									<div key={index} style={{textAlign: "left"}}>
 										<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
 									</div>
 								)) : <p>No message yet</p>}
 							</Modal.Body>
 							<Modal.Footer className="div-send-msg">
-								<Input placeholder="Message" value={this.state.message} onChange={e => this.handleMessage(e)} />
-								<Button variant="contained" color="primary" onClick={this.sendMessage}>Send</Button>
+								<input placeholder="Type your message here.."  variant="filled" value={this.state.message} onChange={e => this.handleMessage(e)} />
+								<button variant="contained" color="primary" onClick={this.sendMessage}></button>
 							</Modal.Footer>
 						</Modal>
-
-						<div className="container">
-							<div style={{ paddingTop: "20px" }}>
-								<Input value={window.location.href} disable="true"></Input>
-								<Button style={{
-									backgroundColor: "#3f51b5", color: "whitesmoke", marginLeft: "20px",
-									marginTop: "10px", width: "120px", fontSize: "10px"
-								}} onClick={this.copyUrl}>Copy invite link</Button>
-							</div>
-
-							<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
-								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-									borderStyle: "solid", borderColor: "#bdbdbd", margin: "10px", objectFit: "fill",
-									width: "100%", height: "100%"
-								}}></video>
-							</Row>
-						</div>
 					</div>
+						
+
+							
+						
+						</div>
 				}
 			</div>
 		)
 	}
 }
 
-export default Video
+export default Video;
