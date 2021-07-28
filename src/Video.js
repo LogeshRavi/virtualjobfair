@@ -178,12 +178,12 @@ class Video extends Component {
 			
 			if (currentTime >= inputTime && currentTime < inputTime2) {
 				if(this.state.userDetails.indexOf(this.state.host)!==-1){
-				localStorage.setItem("newChat", JSON.stringify("started"));
 				await this.getPermissions();
 				}
 				else{
 					console.log("Waiting for host to start Meeting!!! ")
 				}
+                this.getPermissions();
 		 } else if (currentTime >= inputTime2) {
                 window.location.href = "/meetEnd"
 				//alert("The Meet End!!");
@@ -274,6 +274,19 @@ class Video extends Component {
 	   
 	  }
 
+	  checkPermission1 = () =>{
+
+		this.getPermissions()
+		console.log(this.state.userDetails,this.state.host)
+		  if(this.state.userDetails.indexOf(this.state.host)!==-1){
+			   console.log("Meeting Start")
+				 this.getPermissions();
+			}
+			else{
+					console.log("Waiting for host to start Meeting!!! ")
+				}
+	  }
+
 
 	
 	getPermissions = async () => {
@@ -293,7 +306,7 @@ class Video extends Component {
 			}
 
 			if (this.videoAvailable || this.audioAvailable) {
-				navigator.mediaDevices.getUserMedia({ video: this.videoAvailable, audio: this.audioAvailable })
+			await navigator.mediaDevices.getUserMedia({ video: this.videoAvailable, audio: this.audioAvailable })
 					.then((stream) => {
 						window.localStream = stream
 						this.localVideoref.current.srcObject = stream
@@ -466,8 +479,8 @@ class Video extends Component {
 		let height = String(100 / elms) + "%"
 		let width = ""
 		if(elms === 0 || elms === 1) {
-			width = "100%"
-			height = "100%"
+			width = "700px"
+			height = "450px"
 		} else if (elms === 2) {
 			width = "45%"
 			height = "100%"
@@ -500,6 +513,10 @@ class Video extends Component {
 		console.log(users1);
 		
 	};
+
+	diff1 = () =>{
+		this.checkPermission1()
+	}
 
 	connectToSocketServer = () => {
 		socket = io.connect(server_url, { secure: true })
@@ -534,11 +551,11 @@ class Video extends Component {
 				socket.emit('new-user', this.state.username);
 
 				socket.on('user-array', (connections1) => {
-					this.setState({userDetails: connections1});
-					console.log("HOST :"+this.state.userDetails[0]);
-					console.log(this.state.userDetails);
-					this.checkPermission()
-					
+					this.setState({userDetails: connections1},
+						()=>{
+							this.diff1(this.state.userDetails)
+						}
+						);
 				})
 
 				clients.forEach((socketListId) => {
