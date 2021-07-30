@@ -4,7 +4,7 @@ import faker from "faker";
 
 import axios from 'axios'
 import {OBJ} from './Schedule'; 
-import {IconButton, Badge, Input, Button} from '@material-ui/core'
+import {IconButton, Badge, Input, Button, StylesProvider} from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -15,14 +15,16 @@ import CallEndIcon from '@material-ui/icons/CallEnd'
 import ChatIcon from '@material-ui/icons/Chat';
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import PeopleIcon from '@material-ui/icons/People';
+import FeedbackIcon from '@material-ui/icons/Feedback';
 import { Route } from 'react-router-dom'
 import { message } from 'antd'
 import 'antd/dist/antd.css'
-
+import { FaStar} from 'react-icons/fa'
 import { Row } from 'reactstrap'
 import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
+import { Stars } from '@material-ui/icons';
 
 
 // import {toast} from 
@@ -32,7 +34,14 @@ var server_url = process.env.NODE_ENV === 'production' ? 'http://localhost:4001'
 var client_url = process.env.NODE_ENV === 'production' ? 'http://localhost:3000' : "http://localhost:3000";
 
 var connections = {}
+const stars = Array(5).fill(0)
+const colors = {
+	orange:"#FFBA5A",
+	grey:"#a9a9a9"
+}
 const peerConnectionConfig = 
+
+
 
 {
 
@@ -70,6 +79,7 @@ class Video extends Component {
 			screen: false,
 			showModal: false,
 			showModal1: false,
+			showModal2: false,
 			screenAvailable: false,
 			messages: [],
 			message: "",
@@ -80,15 +90,25 @@ class Video extends Component {
 			connections1: [],
 			userDetails: "",
 			userNames: "",
+			userNames1:false,
 			userNumbers: "",
 			url : "",
 			startTime1 :"",
 			endTime1 :"",
+			allowChat:"",
+			allowCodeEditor:"",
+			allowOnlyHostSpeak:"",
+			hostIn:"",
+			hostScreenShareOnly:"",
+			withoutVideo:"",
 			endTime2 :"",
 			difference:"",
 			showPopup : false,
 			url5:this.props.match.params.url,
-			host:""
+			host:"",
+			starRating:0,
+			hoverRating:undefined,
+			feedback:"",
 
 		}
 		this.schedule()
@@ -119,7 +139,13 @@ class Video extends Component {
 				url:res.data.MeetingDetails.mettingId,
 				startTime1:res.data.MeetingDetails.startTime,
 				endTime1:res.data.MeetingDetails.endTime,
-				host:res.data.MeetingDetails.host
+				host:res.data.MeetingDetails.host,
+				allowChat:res.data.MeetingDetails.allowChat,
+				allowCodeEditor:res.data.MeetingDetails.allowCodeEditor,
+				allowOnlyHostSpeak:res.data.MeetingDetails.allowOnlyHostSpeak,
+				hostIn:res.data.MeetingDetails.hostIn,
+				hostScreenShareOnly:res.data.MeetingDetails.hostScreenShareOnly,
+				withoutVideo:res.data.MeetingDetails.withoutVideo
 			})
 		}
 		else{
@@ -551,6 +577,7 @@ class Video extends Component {
 				socket.emit('new-user', this.state.username);
 
 				socket.on('user-array', (connections1) => {
+					
 					this.setState({userDetails: connections1},
 						()=>{
 							this.diff1(this.state.userDetails)
@@ -668,6 +695,9 @@ class Video extends Component {
 
 	handleUsername = (e) => {
 		this.setState({ username: e.target.value });
+		if(this.state.host === e.target.value){
+			this.setState({userNames1:true})
+		}
 	}
 
 	sendMessage = () => {
@@ -743,11 +773,58 @@ class Video extends Component {
 	closeUser= () => {
 		this.setState({ showModal1: false })
 	}
+
+	feedback =()=>{
+		this.setState({showModal2: true});
+	}
 	 
+	closeFeedback = () =>{
+		this.setState({showModal2: false});
+	}
 
+	rating(value){
+		this.setState({starRating:value})
+		console.log(value)
+	}
 
+	hoverRating (value){
+		this.setState({hoverRating:value})
+	}
+
+	mouseLeave =() =>{
+		this.setState({hoverRating:""})
+	}
+
+	handleMessage1 = (e) =>{
+	 this.setState({ feedback: e.target.value })
+	 console.log(e.target.value)
+	}
+
+	submitfeedback =async () =>{
+		var feedback1= document.getElementById("feedback").value;
+		console.log(this.state.starRating)
+		console.log(feedback1)
+
+		const data ={
+			mettingId:this.state.url,
+			host:this.state.host,
+			rating:this.state.starRating,
+			comments:feedback1
+		}
+		await axios.post('http://localhost:4001/api/feedback',data)
+		.then(res=>{
+			 console.log(res.data)
+		})
+
+	}
+
+	videoOff = () =>{
+		console.log("test")
+		this.setState({video:false})
+	}
 	render() {
 		return (
+
            <div>
               {/* {this.state.showPopup} ? <Popup closePopup = {this.togglePop}></Popup> : "" */}
 
@@ -786,10 +863,12 @@ class Video extends Component {
 					<div>
 						<div className="btn-down">
 						</div>
+
 						<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
 								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
 									objectFit: "fill", width: "1206px",height: "510px"}}></video>
 							</Row>
+						
 							
 							<div className="videoFooter">
 
@@ -799,20 +878,47 @@ class Video extends Component {
 							<span id="timer" ref={this.countTimers}></span>
 							</div>
 							
+							{this.state.allowOnlyHostSpeak === "true" ?
+							 this.state.userNames1 ?
 							<div className="micDiv">
 							<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
 								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
 							</IconButton></span>
 							<span className="micText"><p>Mic</p></span>
 							</div>
+							:
+							<div className="micDiv">
+							<span className="Mic"><IconButton style={{ color: "#424242" }} >
+								{ <MicOffIcon />}
+							</IconButton></span>
+							<span className="micText"><p>Mic</p></span>
+							</div>
+							:
+							<div className="micDiv">
+							<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+							</IconButton></span>
+							<span className="micText"><p>Mic</p></span>
+							</div>
+	}
 							
-							
+							{this.state.withoutVideo === "true" ?
+							<div className="videoDiv">
+							<span className="Videocam"><IconButton style={{ color: "#424242" }} >
+								{ <VideocamOffIcon />}
+								
+								</IconButton>
+								</span>
+							<span className="videoText"><p>Video</p></span>
+							</div>
+							:
 							<div className="videoDiv">
 							<span className="Videocam"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
 								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
 								</IconButton></span>
 							<span className="videoText"><p>Video</p></span>
 							</div>
+	}
 							
 					
 							<div className="callEndDiv">
@@ -823,6 +929,28 @@ class Video extends Component {
 							</div>
 							
 							
+                        {this.state.hostScreenShareOnly === "true" ? 
+                                this.state.userNames1  ? 
+                         <div className="screenShareDiv">
+                         <span className="screenShare">{this.state.screenAvailable === true ?
+                      	<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
+	                 	{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+	                    </IconButton>
+                     	: null}
+                     	</span>
+	                    <span className="screenShareText"><p>Screen Share</p></span>
+                        </div>
+                        : 
+						<div className="screenShareDiv">
+						<span className="screenShare">{this.state.screenAvailable === true ?
+						 <IconButton style={{ color: "#424242" }} >
+							 {this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+					   </IconButton>
+						: null}
+						</span>
+					   <span className="screenShareText"><p>Screen Share</p></span>
+					   </div>
+					 :
 
 							<div className="screenShareDiv">
 							<span className="screenShare">{this.state.screenAvailable === true ?
@@ -833,7 +961,7 @@ class Video extends Component {
 								</span>
 								<span className="screenShareText"><p>Screen Share</p></span>
 							</div>
-
+	}
 							<div className="participantDiv">
 							<span className="participant">
 								<IconButton style={{ color: "#424242" }} onClick={this.users}>
@@ -845,14 +973,25 @@ class Video extends Component {
 								</span>
 							</div>
 							
+							{this.state.allowChat === "false" ?
 							<div className="chatIconDiv">
-							<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
-								<IconButton style={{ color: "#424242" }} onClick={this.openChat}>
-									<ChatIcon />
+							<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" >
+								<IconButton style={{ color: "#424242" }}  disabled={(this.state.allowChat === "false")} >
+									<ChatIcon  />
 								</IconButton>
 							</Badge></span>
 							<span className="chatIconText"><p>Chat</p></span>
 							</div>
+                            :
+							<div className="chatIconDiv">
+							<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
+								<IconButton style={{ color: "#424242" }} onClick={this.openChat}  >
+									<ChatIcon  />
+								</IconButton>
+							</Badge></span>
+							<span className="chatIconText"><p>Chat</p></span>
+							</div> 
+							}
 
 							<div className="fullScreenDiv">
 							<span className="fullScreen">
@@ -862,7 +1001,20 @@ class Video extends Component {
 							</span>
 							<span className="fullScreenText"><p>Full Screen</p></span>
 							</div>
-							</div>
+
+                         {this.state.userNames1 ?
+							<div className="feedbackdiv">
+							<span className="feedback">
+                                 <IconButton style={{color:"#424242"}} onClick={this.feedback}>
+									 <FeedbackIcon />
+								 </IconButton>
+							</span>
+                            <span className="feedbackText"><p>Feedback</p></span>
+							</div> : ""
+	}
+						</div>
+							
+						
 							
 					<div className="user-container">
 						<Modal className="user" show={this.state.showModal1} onHide={this.closeUser} style={{ zIndex: "999999" }}>
@@ -878,6 +1030,62 @@ class Video extends Component {
 							</Modal.Header>
 							<Modal.Body className="userBody" style={{ overflow: "auto", overflowY: "auto", height: "500px", textAlign: "left" }} >
 								<p>{this.state.userNames}</p>
+							</Modal.Body>
+						</Modal>
+					</div>
+
+
+					<div className="feedback-container">
+						<Modal className="feedbackform" show={this.state.showModal2} onHide={this.closeFeedback}>
+							<Modal.Header className="feedbackHeader">
+								<div className="feedbackTitle">
+									<p>FeedBack Form</p>
+								</div>
+								<button onClick={this.closeFeedback}></button>
+							</Modal.Header>
+							<Modal.Body className="feedbackBody" style={{height:"500px"}}>
+
+								<div className="containerfeedback">
+									<div className="star">
+                                       {stars.map((_,index)=>{
+										   return(
+											   <FaStar 
+											   key={index}
+											   size={24}
+											   onClick={()=> this.rating(index+1)}
+											   onMouseOver={()=>this.hoverRating(index+1)}
+											   onMouseLeave={this.mouseLeave}
+											   color={(this.state.starRating || this.state.hoverRating) >index ? colors.orange:colors.grey}
+											   style={{
+                                                 marginRight:10,
+												 cursor:"pointer"
+											   }}
+											 //  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
+											   
+											 //  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
+											    />
+										   )
+									   })}
+									</div>
+									{/* <textarea 
+									   style={{ border: "1px solid #a9a9a9",
+									   borderRadius: 5,
+									   width: 300,
+									   minHeight: 100,
+									   padding: 10}}
+									    placeholder="What's your feedback"
+										onChange={e => this.handleMessage1(e)}
+									/> */}
+									<textArea id="feedback" placeholder="FeedBack" variant="contained"></textArea>
+									<button
+									 style={{ border: "1px solid #a9a9a9",
+									 borderRadius: 5,
+									 width: 300,
+									 padding: 10}}
+									 onClick={this.submitfeedback}
+									 >Submit</button>
+								</div>
+
 							</Modal.Body>
 						</Modal>
 					</div>
@@ -910,6 +1118,8 @@ class Video extends Component {
 			</div>
 		)
 	}
+
+	
 }
 
 export default Video;
