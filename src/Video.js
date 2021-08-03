@@ -3,8 +3,8 @@ import * as io from 'socket.io-client';
 import faker from "faker";
 
 import axios from 'axios'
-import {OBJ} from './Schedule'; 
-import {IconButton, Badge, Input, Button, StylesProvider} from '@material-ui/core'
+import { OBJ } from './Schedule';
+import { IconButton, Badge, Input, Button, StylesProvider } from '@material-ui/core'
 import VideocamIcon from '@material-ui/icons/Videocam'
 import VideocamOffIcon from '@material-ui/icons/VideocamOff'
 import MicIcon from '@material-ui/icons/Mic'
@@ -19,11 +19,12 @@ import FeedbackIcon from '@material-ui/icons/Feedback';
 import { Route } from 'react-router-dom'
 import { message } from 'antd'
 import 'antd/dist/antd.css'
-import { FaStar} from 'react-icons/fa'
+import { FaStar } from 'react-icons/fa'
 import { Row } from 'reactstrap'
 import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
+import WaitingPage from './waitingPage';
 import { Stars } from '@material-ui/icons';
 
 
@@ -36,10 +37,10 @@ var client_url = process.env.NODE_ENV === 'production' ? 'http://localhost:3000'
 var connections = {}
 const stars = Array(5).fill(0)
 const colors = {
-	orange:"#FFBA5A",
-	grey:"#a9a9a9"
+	orange: "#FFBA5A",
+	grey: "#a9a9a9"
 }
-const peerConnectionConfig = 
+const peerConnectionConfig =
 
 
 
@@ -90,25 +91,25 @@ class Video extends Component {
 			connections1: [],
 			userDetails: "",
 			userNames: "",
-			userNames1:false,
+			userNames1: false,
 			userNumbers: "",
-			url : "",
-			startTime1 :"",
-			endTime1 :"",
-			allowChat:"",
-			allowCodeEditor:"",
-			allowOnlyHostSpeak:"",
-			hostIn:"",
-			hostScreenShareOnly:"",
-			withoutVideo:"",
-			endTime2 :"",
-			difference:"",
-			showPopup : false,
-			url5:this.props.match.params.url,
-			host:"",
-			starRating:0,
-			hoverRating:undefined,
-			feedback:"",
+			url: "",
+			startTime1: "",
+			endTime1: "",
+			allowChat: "",
+			allowCodeEditor: "",
+			allowOnlyHostSpeak: "",
+			hostIn: "",
+			hostScreenShareOnly: "",
+			withoutVideo: "",
+			endTime2: "",
+			difference: "",
+			showPopup: false,
+			url5: this.props.match.params.url,
+			host: "",
+			starRating: 0,
+			hoverRating: undefined,
+			feedback: "",
 
 		}
 		this.schedule()
@@ -116,53 +117,53 @@ class Video extends Component {
 		connections = {}
 		// this.getPermissions();
 		//this.checkPermission();
-		
+
 	}
 
-	
-	
-  	schedule = async() =>{
+
+
+	schedule = async () => {
 
 		const data = {
-			mettingId : this.state.userMeet
+			mettingId: this.state.userMeet
 		}
 		console.log(data)
 		// let url = ''
 		// let startTime1 = ''
 		// let endTime1 = ''
-	   await axios.post('http://localhost:4001/api/getschedule',data)
-		.then(res=>{
-			if (this._isMounted) {
-				if(res.data.StatusCode== 200){
-			console.log(res.data.MeetingDetails)
-			this.setState({
-				url:res.data.MeetingDetails.mettingId,
-				startTime1:res.data.MeetingDetails.startTime,
-				endTime1:res.data.MeetingDetails.endTime,
-				host:res.data.MeetingDetails.host,
-				allowChat:res.data.MeetingDetails.allowChat,
-				allowCodeEditor:res.data.MeetingDetails.allowCodeEditor,
-				allowOnlyHostSpeak:res.data.MeetingDetails.allowOnlyHostSpeak,
-				hostIn:res.data.MeetingDetails.hostIn,
-				hostScreenShareOnly:res.data.MeetingDetails.hostScreenShareOnly,
-				withoutVideo:res.data.MeetingDetails.withoutVideo
+		await axios.post('http://localhost:4001/api/getschedule', data)
+			.then(res => {
+				if (this._isMounted) {
+					if (res.data.StatusCode == 200) {
+						console.log(res.data.MeetingDetails)
+						this.setState({
+							url: res.data.MeetingDetails.mettingId,
+							startTime1: res.data.MeetingDetails.startTime,
+							endTime1: res.data.MeetingDetails.endTime,
+							host: res.data.MeetingDetails.host,
+							allowChat: res.data.MeetingDetails.allowChat,
+							allowCodeEditor: res.data.MeetingDetails.allowCodeEditor,
+							allowOnlyHostSpeak: res.data.MeetingDetails.allowOnlyHostSpeak,
+							hostIn: res.data.MeetingDetails.hostIn,
+							hostScreenShareOnly: res.data.MeetingDetails.hostScreenShareOnly,
+							withoutVideo: res.data.MeetingDetails.withoutVideo
+						})
+					}
+					else {
+						alert('Invalid Meeting ID')
+					}
+				}
+				//  url = res.data.MeetingDetails.mettingId
+				//  startTime1 = res.data.MeetingDetails.startTime
+				//  endTime1 = res.data.MeetingDetails.endTime
 			})
-		}
-		else{
-			alert('Invalid Meeting ID')
-		}
-		}
-			//  url = res.data.MeetingDetails.mettingId
-			//  startTime1 = res.data.MeetingDetails.startTime
-			//  endTime1 = res.data.MeetingDetails.endTime
-		})
 	}
 
 
-	
+
 	checkPermission = async () => {
-		
-		console.log(this.state.startTime1,this.state.endTime1,this.state.url)
+
+		console.log(this.state.startTime1, this.state.endTime1, this.state.url)
 		const { history } = this.props;
 		var newArray1 = OBJ.Meeting.filter(function (value) {
 			return value.id === "fgh"
@@ -175,9 +176,9 @@ class Video extends Component {
 		console.log(cred1);
 
 
-		
 
-		if (this.state.userMeet === this.state.url ) {
+
+		if (this.state.userMeet === this.state.url) {
 			//	get system local time
 			const date1 = new Date();
 			const time = date1.toTimeString().split(' ')[0].split(':');
@@ -201,17 +202,17 @@ class Video extends Component {
 			var inputTime2 = pad(hours) + ':' + pad(minutes);
 			console.log(inputTime2);
 
-			
+
 			if (currentTime >= inputTime && currentTime < inputTime2) {
-				if(this.state.userDetails.indexOf(this.state.host)!==-1){
-				await this.getPermissions();
+				if (this.state.userDetails.indexOf(this.state.host) !== -1) {
+					await this.getPermissions();
 				}
-				else{
+				else {
 					console.log("Waiting for host to start Meeting!!! ")
 				}
-                this.getPermissions();
-		 } else if (currentTime >= inputTime2) {
-                window.location.href = "/meetEnd"
+				this.getPermissions();
+			} else if (currentTime >= inputTime2) {
+				window.location.href = "/meetEnd"
 				//alert("The Meet End!!");
 			}
 			else {
@@ -230,97 +231,103 @@ class Video extends Component {
 
 	}
 
-	async  componentDidMount() {
-		try{
+	async componentDidMount() {
+		try {
 			this._isMounted = true;
-		
-			  setTimeout(() => {
+
+			setTimeout(() => {
 				this.checkPermission()
 			}, 2000);
-			
-		 await setTimeout(()=>{
+
+			await setTimeout(() => {
 				var endTime = this.state.endTime1
 				var date = new Date();
 				var currentTime = Math.floor(date.getTime() / 1000);
 				console.log(currentTime)
 				var diff = endTime - currentTime
 				console.log(diff)
-				this.setState({difference:diff}
+				this.setState({ difference: diff }
 					,
-					()=>{
+					() => {
 						this.diff(this.state.difference)
 					}
-					)
-				var rem5 = (diff - 300) 
-				this.setState({endTime2:rem5} // 12:40 - 12:53  = 13 - 5 = 48
-					,    
-					()=>{
+				)
+				var rem5 = (diff - 300)
+				this.setState({ endTime2: rem5 } // 12:40 - 12:53  = 13 - 5 = 48
+					,
+					() => {
 						this.end(this.state.endTime2)
 					}
-					)
-			},2000);
-		//    setTimeout(() => {
-	// 		console.log("Meeting Will Ended in 5mins")
-	// 	}, this.state.endTime2);//0 
-	}
-	catch(err){
-         
-	}
+				)
+			}, 2000);
+			//    setTimeout(() => {
+			// 		console.log("Meeting Will Ended in 5mins")
+			// 	}, this.state.endTime2);//0 
+		}
+		catch (err) {
 
-}
-		// setTimeout(() => {
-		// 	this.checkPermission()
-		// }, diff*1000);
-	
+		}
+
+	}
+	// setTimeout(() => {
+	// 	this.checkPermission()
+	// }, diff*1000);
+
 
 	componentWillUnmount() {
 		this._isMounted = false;
-		
-	  }
-	  end = (e) =>{
-        console.log("rem 5min " + e)
-			   setTimeout(() => {
-				 this.togglePop()
-			console.log("Meeting Will Ended in 5mins")
-		}, e*1000);
-	   
-	  }
 
-	  togglePop(){
+	}
+	end = (e) => {
+		console.log("rem 5min " + e)
+		setTimeout(() => {
+			this.togglePop()
+			console.log("Meeting Will Ended in 5mins")
+		}, e * 1000);
+
+	}
+
+	togglePop() {
 		this.setState({
-		  showPopup : !this.state.showPopup
+			showPopup: !this.state.showPopup
 		});
 	}
-	  diff = (e) =>{
-        console.log("end in "+e)
-			   setTimeout(() => {
-				   this.checkPermission()
+	diff = (e) => {
+		console.log("end in " + e)
+		setTimeout(() => {
+			this.checkPermission()
 			console.log("Meeting Ended ")
-		}, e*1000);
-	   
-	  }
+		}, e * 1000);
 
-	  checkPermission1 = () =>{
+	}
+
+	checkPermission1 = () => {
 
 		this.getPermissions()
-		console.log(this.state.userDetails,this.state.host)
-		  if(this.state.userDetails.indexOf(this.state.host)!==-1){
-			   console.log("Meeting Start")
-				 this.getPermissions();
-			}
-			else{
-					console.log("Waiting for host to start Meeting!!! ")
-				}
-	  }
+		console.log(this.state.userDetails, this.state.host)
+		if (this.state.userDetails.indexOf(this.state.host) !== -1 || this.state.hostIn === "false") {
+			console.log("Meeting Start")
+			this.getPermissions();
+		}
+		else {
+			console.log("Waiting for host to start Meeting!!! ")
+		}
+	}
 
 
-	
+
 	getPermissions = async () => {
-		try{
-			await navigator.mediaDevices.getUserMedia({ video: true })
-				.then(() => this.videoAvailable = true)
-				.catch(() => this.videoAvailable = false)
-
+		try {
+			if (this.state.withoutVideo === "true") {
+				await navigator.mediaDevices.getUserMedia({ video: false })
+					.then(() => this.videoAvailable = false)
+					.catch(() => this.videoAvailable = false)
+			}
+			else {
+				await navigator.mediaDevices.getUserMedia({ video: true })
+					.then(() => this.videoAvailable = true)
+					.catch(() => this.videoAvailable = false)
+			}
 			await navigator.mediaDevices.getUserMedia({ audio: true })
 				.then(() => this.audioAvailable = true)
 				.catch(() => this.audioAvailable = false)
@@ -332,18 +339,18 @@ class Video extends Component {
 			}
 
 			if (this.videoAvailable || this.audioAvailable) {
-			await navigator.mediaDevices.getUserMedia({ video: this.videoAvailable, audio: this.audioAvailable })
+				await navigator.mediaDevices.getUserMedia({ video: this.videoAvailable, audio: this.audioAvailable })
 					.then((stream) => {
 						window.localStream = stream
 						this.localVideoref.current.srcObject = stream
 					})
-					.then((stream) => {})
+					.then((stream) => { })
 					.catch((e) => console.log(e))
 			}
-		} catch(e) { console.log(e) }
+		} catch (e) { console.log(e) }
 	}
 
-	
+
 
 	getMedia = () => {
 		this.setState({
@@ -359,20 +366,20 @@ class Video extends Component {
 		if ((this.state.video && this.videoAvailable) || (this.state.audio && this.audioAvailable)) {
 			navigator.mediaDevices.getUserMedia({ video: this.state.video, audio: this.state.audio })
 				.then(this.getUserMediaSuccess)
-				.then((stream) => {})
+				.then((stream) => { })
 				.catch((e) => console.log(e))
 		} else {
 			try {
 				let tracks = this.localVideoref.current.srcObject.getTracks()
 				tracks.forEach(track => track.stop())
-			} catch (e) {}
+			} catch (e) { }
 		}
 	}
 
 	getUserMediaSuccess = (stream) => {
 		try {
 			window.localStream.getTracks().forEach(track => track.stop())
-		} catch(e) { console.log(e) }
+		} catch (e) { console.log(e) }
 
 		window.localStream = stream
 		this.localVideoref.current.srcObject = stream
@@ -394,30 +401,30 @@ class Video extends Component {
 		stream.getTracks().forEach(track => track.onended = () => {
 			this.setState(
 				{
-				video: false,
-				audio: false,
-			}, () => {
-				try {
-					let tracks = this.localVideoref.current.srcObject.getTracks()
-					tracks.forEach(track => track.stop())
-				} catch(e) { console.log(e) }
+					video: false,
+					audio: false,
+				}, () => {
+					try {
+						let tracks = this.localVideoref.current.srcObject.getTracks()
+						tracks.forEach(track => track.stop())
+					} catch (e) { console.log(e) }
 
-				let blackSilence = (...args) => new MediaStream([this.black(...args), this.silence()])
-				window.localStream = blackSilence()
-				this.localVideoref.current.srcObject = window.localStream
+					let blackSilence = (...args) => new MediaStream([this.black(...args), this.silence()])
+					window.localStream = blackSilence()
+					this.localVideoref.current.srcObject = window.localStream
 
-				for (let id in connections) {
-					connections[id].addStream(window.localStream)
+					for (let id in connections) {
+						connections[id].addStream(window.localStream)
 
-					connections[id].createOffer().then((description) => {
-						connections[id].setLocalDescription(description)
-							.then(() => {
-								socket.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
-							})
-							.catch(e => console.log(e))
-					})
-				}
-			})
+						connections[id].createOffer().then((description) => {
+							connections[id].setLocalDescription(description)
+								.then(() => {
+									socket.emit('signal', id, JSON.stringify({ 'sdp': connections[id].localDescription }))
+								})
+								.catch(e => console.log(e))
+						})
+					}
+				})
 		})
 	}
 
@@ -426,7 +433,7 @@ class Video extends Component {
 			if (navigator.mediaDevices.getDisplayMedia) {
 				navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
 					.then(this.getDislayMediaSuccess)
-					.then((stream) => {})
+					.then((stream) => { })
 					.catch((e) => console.log(e))
 			}
 		}
@@ -435,7 +442,7 @@ class Video extends Component {
 	getDislayMediaSuccess = (stream) => {
 		try {
 			window.localStream.getTracks().forEach(track => track.stop())
-		} catch(e) { console.log(e) }
+		} catch (e) { console.log(e) }
 
 		window.localStream = stream
 		this.localVideoref.current.srcObject = stream
@@ -461,7 +468,7 @@ class Video extends Component {
 				try {
 					let tracks = this.localVideoref.current.srcObject.getTracks()
 					tracks.forEach(track => track.stop())
-				} catch(e) { console.log(e) }
+				} catch (e) { console.log(e) }
 
 				let blackSilence = (...args) => new MediaStream([this.black(...args), this.silence()])
 				window.localStream = blackSilence()
@@ -504,7 +511,7 @@ class Video extends Component {
 
 		let height = String(100 / elms) + "%"
 		let width = ""
-		if(elms === 0 || elms === 1) {
+		if (elms === 0 || elms === 1) {
 			width = "700px"
 			height = "450px"
 		} else if (elms === 2) {
@@ -525,22 +532,17 @@ class Video extends Component {
 			videos[a].style.setProperty("height", height)
 		}
 
-		return {minWidth, minHeight, width, height}
+		return { minWidth, minHeight, width, height }
 	}
 
-	connect = () => { 
+	connect = () => {
 
-	
+
 		this.setState({ askForUsername: false }, () => this.getMedia());
-		let name= this.state.username;
-		let users=[this.state.username];
-		let users1=[...users];
-		users1.push(name);
-		console.log(users1);
-		
+
 	};
 
-	diff1 = () =>{
+	diff1 = () => {
 		this.checkPermission1()
 	}
 
@@ -549,18 +551,19 @@ class Video extends Component {
 
 		socket.on('signal', this.gotMessageFromServer);
 
-		
+
 
 		socket.on('connect', () => {
 			socket.emit('join-call', window.location.href)
 			socketId = socket.id;
-			
+
 
 			socket.on('chat-message', this.addMessage)
 
-			
+
 
 			socket.on('user-left', (id) => {
+				console.log(id)
 				let video = document.querySelector(`[data-socket="${id}"]`)
 				if (video !== null) {
 					elms--
@@ -577,12 +580,12 @@ class Video extends Component {
 				socket.emit('new-user', this.state.username);
 
 				socket.on('user-array', (connections1) => {
-					
-					this.setState({userDetails: connections1},
-						()=>{
+
+					this.setState({ userDetails: connections1 },
+						() => {
 							this.diff1(this.state.userDetails)
 						}
-						);
+					);
 				})
 
 				clients.forEach((socketListId) => {
@@ -607,9 +610,11 @@ class Video extends Component {
 
 							let video = document.createElement('video')
 
-							let css = {minWidth: cssMesure.minWidth, minHeight: cssMesure.minHeight, maxHeight: "100%", margin: "10px",
-								borderStyle: "solid", borderColor: "#bdbdbd", objectFit: "fill"}
-							for(let i in css) video.style[i] = css[i]
+							let css = {
+								minWidth: cssMesure.minWidth, minHeight: cssMesure.minHeight, maxHeight: "100%", margin: "10px",
+								borderStyle: "solid", borderColor: "#bdbdbd", objectFit: "fill"
+							}
+							for (let i in css) video.style[i] = css[i]
 
 							video.style.setProperty("width", cssMesure.width)
 							video.style.setProperty("height", cssMesure.height)
@@ -635,11 +640,11 @@ class Video extends Component {
 				if (id === socketId) {
 					for (let id2 in connections) {
 						if (id2 === socketId) continue
-						
+
 						try {
 							connections[id2].addStream(window.localStream)
-						} catch(e) {}
-			
+						} catch (e) { }
+
 						connections[id2].createOffer().then((description) => {
 							connections[id2].setLocalDescription(description)
 								.then(() => {
@@ -676,7 +681,7 @@ class Video extends Component {
 		try {
 			let tracks = this.localVideoref.current.srcObject.getTracks()
 			tracks.forEach(track => track.stop())
-		} catch (e) {}
+		} catch (e) { }
 		window.location.href = "/"
 	}
 
@@ -695,8 +700,8 @@ class Video extends Component {
 
 	handleUsername = (e) => {
 		this.setState({ username: e.target.value });
-		if(this.state.host === e.target.value){
-			this.setState({userNames1:true})
+		if (this.state.host === e.target.value) {
+			this.setState({ userNames1: true })
 		}
 	}
 
@@ -729,121 +734,126 @@ class Video extends Component {
 		})
 	}
 
-	
 
-	toggleFullScreen= () => {
+
+	toggleFullScreen = () => {
 		if (!document.fullscreenElement) {
 			document.documentElement.requestFullscreen(this.localVideoref);
 		} else {
-		  if (document.exitFullscreen) {
-			document.exitFullscreen();
-		  }
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			}
 		}
-	  }
+	}
 
-	 countTimers = () => {
+	countTimers = () => {
 		var timerVar = setInterval(countTimer, 1000);
 		var totalSeconds = 0;
 		function countTimer() {
-		++totalSeconds;
-		var hour = Math.floor(totalSeconds /3600);
-		var minute = Math.floor((totalSeconds - hour*3600)/60);
-		var seconds = totalSeconds - (hour*3600 + minute*60);
-		if(hour < 10)
-		  hour = "0"+hour;
-		if(minute < 10)
-		  minute = "0"+minute;
-		if(seconds < 10)
-		  seconds = "0"+seconds;
-		document.getElementById("timer").innerHTML = hour + ":" + minute + ":" + seconds;
+			++totalSeconds;
+			var hour = Math.floor(totalSeconds / 3600);
+			var minute = Math.floor((totalSeconds - hour * 3600) / 60);
+			var seconds = totalSeconds - (hour * 3600 + minute * 60);
+			if (hour < 10)
+				hour = "0" + hour;
+			if (minute < 10)
+				minute = "0" + minute;
+			if (seconds < 10)
+				seconds = "0" + seconds;
+			document.getElementById("timer").innerHTML = hour + ":" + minute + ":" + seconds;
 		}
-	 }
-
-	 users = () => {
-		console.log(this.state.userDetails);
-	    var Details = this.state.userDetails.toString();
-		console.log(Details);
-		this.setState({userNames: Details});
-		var numberOfUsers = this.state.userDetails.length;
-		this.setState({userNumbers: numberOfUsers});
-		console.log(this.state.userNumbers);
-		this.setState({showModal1: true});
 	}
 
-	closeUser= () => {
+	users = () => {
+		console.log(this.state.userDetails);
+		var Details = this.state.userDetails.toString();
+		console.log(Details);
+		this.setState({ userNames: Details });
+		var numberOfUsers = this.state.userDetails.length;
+		this.setState({ userNumbers: numberOfUsers });
+		console.log(this.state.userNumbers);
+		this.setState({ showModal1: true });
+	}
+
+	closeUser = () => {
 		this.setState({ showModal1: false })
 	}
 
-	feedback =()=>{
-		this.setState({showModal2: true});
-	}
-	 
-	closeFeedback = () =>{
-		this.setState({showModal2: false});
+	feedback = () => {
+		this.setState({ showModal2: true });
 	}
 
-	rating(value){
-		this.setState({starRating:value})
+	closeFeedback = () => {
+		this.setState({ showModal2: false });
+	}
+
+	rating(value) {
+		this.setState({ starRating: value })
 		console.log(value)
 	}
 
-	hoverRating (value){
-		this.setState({hoverRating:value})
+	hoverRating(value) {
+		this.setState({ hoverRating: value })
 	}
 
-	mouseLeave =() =>{
-		this.setState({hoverRating:""})
+	mouseLeave = () => {
+		this.setState({ hoverRating: "" })
 	}
 
-	handleMessage1 = (e) =>{
-	 this.setState({ feedback: e.target.value })
-	 console.log(e.target.value)
+	handleMessage1 = (e) => {
+		this.setState({ feedback: e.target.value })
+		console.log(e.target.value)
 	}
 
-	submitfeedback =async () =>{
-		var feedback1= document.getElementById("feedback").value;
+	submitfeedback = async () => {
+		var feedback1 = document.getElementById("feedback").value;
 		console.log(this.state.starRating)
 		console.log(feedback1)
 
-		const data ={
-			mettingId:this.state.url,
-			host:this.state.host,
-			rating:this.state.starRating,
-			comments:feedback1
+		const data = {
+			mettingId: this.state.url,
+			host: this.state.host,
+			rating: this.state.starRating,
+			comments: feedback1
 		}
-		await axios.post('http://localhost:4001/api/feedback',data)
-		.then(res=>{
-			 console.log(res.data)
-		})
+		this.closeFeedback()
+		await axios.post('http://localhost:4001/api/feedback', data)
+			.then(res => {
+				console.log(res.data)
+			})
+
+
 
 	}
 
-	videoOff = () =>{
+	videoOff = () => {
 		console.log("test")
-		this.setState({video:false})
+		this.setState({ video: false })
 	}
 	render() {
 		return (
 
-           <div>
-              {/* {this.state.showPopup} ? <Popup closePopup = {this.togglePop}></Popup> : "" */}
+			<div>
+				{/* {this.state.showPopup} ? <Popup closePopup = {this.togglePop}></Popup> : "" */}
 
 
 
 
 				{this.state.askForUsername === true ?
+
 					<div className="joinPage">
 
 						<div className="videoBox">
 							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-								width: "700px",height: "450px"}}></video>
+								width: "700px", height: "450px"
+							}}></video>
 						</div>
 
 						<div className="videoContainer1">
 							<div className="videoContainer2" >
 
 								<p>Enter your username and create the meeting</p>
-								<input placeholder="username"  variant="filled" value={this.state.username} onChange={e => this.handleUsername(e)} />
+								<input placeholder="username" variant="filled" value={this.state.username} onChange={e => this.handleUsername(e)} />
 								<button variant="contained" color="primary" onClick={this.connect} style={{ margin: "20px" }}>Join</button>
 
 							</div>
@@ -851,223 +861,226 @@ class Video extends Component {
 							<div className="videoContainer3">
 
 								<p>Meeting link</p>
-								<input  variant="filled" value={window.location.href} disable="true" />
+								<input variant="filled" value={window.location.href} disable="true" />
 								<button variant="contained" color="primary" onClick={this.copyUrl} style={{ margin: "20px" }}>Copy</button>
-							
+
 							</div>
 						</div>
 
-						
+
 					</div>
 					:
-					<div>
-						<div className="btn-down">
-						</div>
-
-						<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
-								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
-									objectFit: "fill", width: "1206px",height: "510px"}}></video>
-							</Row>
-						
-							
-							<div className="videoFooter">
-
-							<div className="videoTimer">
-							<span className="url">{this.state.userMeet}</span>
-							<span className="constant">|</span>
-							<span id="timer" ref={this.countTimers}></span>
-							</div>
-							
-							{this.state.allowOnlyHostSpeak === "true" ?
-							 this.state.userNames1 ?
-							<div className="micDiv">
-							<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
-								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-							</IconButton></span>
-							<span className="micText"><p>Mic</p></span>
-							</div>
-							:
-							<div className="micDiv">
-							<span className="Mic"><IconButton style={{ color: "#424242" }} >
-								{ <MicOffIcon />}
-							</IconButton></span>
-							<span className="micText"><p>Mic</p></span>
-							</div>
-							:
-							<div className="micDiv">
-							<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
-								{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
-							</IconButton></span>
-							<span className="micText"><p>Mic</p></span>
-							</div>
-	}
-							
-							{this.state.withoutVideo === "true" ?
-							<div className="videoDiv">
-							<span className="Videocam"><IconButton style={{ color: "#424242" }} >
-								{ <VideocamOffIcon />}
-								
-								</IconButton>
-								</span>
-							<span className="videoText"><p>Video</p></span>
-							</div>
-							:
-							<div className="videoDiv">
-							<span className="Videocam"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
-								{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
-								</IconButton></span>
-							<span className="videoText"><p>Video</p></span>
-							</div>
-	}
-							
-					
-							<div className="callEndDiv">
-							<span className="callEnd"><IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
-								<CallEndIcon />
-							</IconButton></span>
-							<span className="callEndText"><p>End Call</p></span>
-							</div>
-							
-							
-                        {this.state.hostScreenShareOnly === "true" ? 
-                                this.state.userNames1  ? 
-                         <div className="screenShareDiv">
-                         <span className="screenShare">{this.state.screenAvailable === true ?
-                      	<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
-	                 	{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-	                    </IconButton>
-                     	: null}
-                     	</span>
-	                    <span className="screenShareText"><p>Screen Share</p></span>
-                        </div>
-                        : 
-						<div className="screenShareDiv">
-						<span className="screenShare">{this.state.screenAvailable === true ?
-						 <IconButton style={{ color: "#424242" }} >
-							 {this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-					   </IconButton>
-						: null}
-						</span>
-					   <span className="screenShareText"><p>Screen Share</p></span>
-					   </div>
-					 :
-
-							<div className="screenShareDiv">
-							<span className="screenShare">{this.state.screenAvailable === true ?
-								<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
-									{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-								</IconButton>
-								: null}
-								</span>
-								<span className="screenShareText"><p>Screen Share</p></span>
-							</div>
-	}
-							<div className="participantDiv">
-							<span className="participant">
-								<IconButton style={{ color: "#424242" }} onClick={this.users}>
-									<PeopleIcon />
-								</IconButton>
-							</span>
-							<span className="participantText">
-								<p>Participants</p>
-								</span>
-							</div>
-							
-							{this.state.allowChat === "false" ?
-							<div className="chatIconDiv">
-							<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" >
-								<IconButton style={{ color: "#424242" }}  disabled={(this.state.allowChat === "false")} >
-									<ChatIcon  />
-								</IconButton>
-							</Badge></span>
-							<span className="chatIconText"><p>Chat</p></span>
-							</div>
-                            :
-							<div className="chatIconDiv">
-							<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
-								<IconButton style={{ color: "#424242" }} onClick={this.openChat}  >
-									<ChatIcon  />
-								</IconButton>
-							</Badge></span>
-							<span className="chatIconText"><p>Chat</p></span>
-							</div> 
-							}
-
-							<div className="fullScreenDiv">
-							<span className="fullScreen">
-								<IconButton style={{ color: "#424242" }} onClick={this.toggleFullScreen}>
-									< FullscreenIcon />
-								</IconButton>
-							</span>
-							<span className="fullScreenText"><p>Full Screen</p></span>
-							</div>
-
-                         {this.state.userNames1 ?
-							<div className="feedbackdiv">
-							<span className="feedback">
-                                 <IconButton style={{color:"#424242"}} onClick={this.feedback}>
-									 <FeedbackIcon />
-								 </IconButton>
-							</span>
-                            <span className="feedbackText"><p>Feedback</p></span>
-							</div> : ""
-	}
-						</div>
-							
-						
-							
-					<div className="user-container">
-						<Modal className="user" show={this.state.showModal1} onHide={this.closeUser} style={{ zIndex: "999999" }}>
-							<Modal.Header className="userHeader">
-								<div className = "userTitle">
-								<Modal.Title>Participants</Modal.Title>
-								<div className="userStatic">
-								<p>{this.state.userNumbers}</p>
-								<p>participants</p>
+					this.state.hostIn === "true" ?
+						this.state.userDetails.indexOf(this.state.host) !== -1 ?
+							<div>
+								<div className="btn-down">
 								</div>
-								</div>
-								<button onClick={this.closeUser}></button>
-							</Modal.Header>
-							<Modal.Body className="userBody" style={{ overflow: "auto", overflowY: "auto", height: "500px", textAlign: "left" }} >
-								<p>{this.state.userNames}</p>
-							</Modal.Body>
-						</Modal>
-					</div>
+
+								<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
+									<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
+										objectFit: "fill", width: "1206px", height: "510px"
+									}}></video>
+								</Row>
 
 
-					<div className="feedback-container">
-						<Modal className="feedbackform" show={this.state.showModal2} onHide={this.closeFeedback}>
-							<Modal.Header className="feedbackHeader">
-								<div className="feedbackTitle">
-									<p>FeedBack Form</p>
-								</div>
-								<button onClick={this.closeFeedback}></button>
-							</Modal.Header>
-							<Modal.Body className="feedbackBody" style={{height:"500px"}}>
+								<div className="videoFooter">
 
-								<div className="containerfeedback">
-									<div className="star">
-                                       {stars.map((_,index)=>{
-										   return(
-											   <FaStar 
-											   key={index}
-											   size={24}
-											   onClick={()=> this.rating(index+1)}
-											   onMouseOver={()=>this.hoverRating(index+1)}
-											   onMouseLeave={this.mouseLeave}
-											   color={(this.state.starRating || this.state.hoverRating) >index ? colors.orange:colors.grey}
-											   style={{
-                                                 marginRight:10,
-												 cursor:"pointer"
-											   }}
-											 //  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
-											   
-											 //  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
-											    />
-										   )
-									   })}
+									<div className="videoTimer">
+										<span className="url">{this.state.userMeet}</span>
+										<span className="constant">|</span>
+										<span id="timer" ref={this.countTimers}></span>
 									</div>
-									{/* <textarea 
+
+									{this.state.allowOnlyHostSpeak === "true" ?
+										this.state.userNames1 ?
+											<div className="micDiv">
+												<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+													{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+												</IconButton></span>
+												<span className="micText"><p>Mic</p></span>
+											</div>
+											:
+											<div className="micDiv">
+												<span className="Mic"><IconButton style={{ color: "#424242" }} disabled={(this.state.allowOnlyHostSpeak === "true")} >
+													{<MicOffIcon />}
+												</IconButton></span>
+												<span className="micText"><p>Mic</p></span>
+											</div>
+										:
+										<div className="micDiv">
+											<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+												{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+											</IconButton></span>
+											<span className="micText"><p>Mic</p></span>
+										</div>
+									}
+
+									{this.state.withoutVideo === "true" ?
+										<div className="videoDiv">
+											<span className="Videocam"><IconButton style={{ color: "#424242" }} disabled={(this.state.withoutVideo === "true")} >
+												{<VideocamOffIcon />}
+
+											</IconButton>
+											</span>
+											<span className="videoText"><p>Video</p></span>
+										</div>
+										:
+										<div className="videoDiv">
+											<span className="Videocam"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
+												{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+											</IconButton></span>
+											<span className="videoText"><p>Video</p></span>
+										</div>
+									}
+
+
+									<div className="callEndDiv">
+										<span className="callEnd"><IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
+											<CallEndIcon />
+										</IconButton></span>
+										<span className="callEndText"><p>End Call</p></span>
+									</div>
+
+
+									{this.state.hostScreenShareOnly === "true" ?
+										this.state.userNames1 ?
+											<div className="screenShareDiv">
+												<span className="screenShare">{this.state.screenAvailable === true ?
+													<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
+														{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+													</IconButton>
+													: null}
+												</span>
+												<span className="screenShareText"><p>Screen Share</p></span>
+											</div>
+											:
+											<div className="screenShareDiv">
+												<span className="screenShare">{this.state.screenAvailable === true ?
+													<IconButton style={{ color: "#424242" }} disabled={(this.state.hostScreenShareOnly === "true")} >
+														{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+													</IconButton>
+													: null}
+												</span>
+												<span className="screenShareText"><p>Screen Share</p></span>
+											</div>
+										:
+
+										<div className="screenShareDiv">
+											<span className="screenShare">{this.state.screenAvailable === true ?
+												<IconButton style={{ color: "#424242" }} onClick={this.handleScreen} >
+													{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+												</IconButton>
+												: null}
+											</span>
+											<span className="screenShareText"><p>Screen Share</p></span>
+										</div>
+									}
+									<div className="participantDiv">
+										<span className="participant">
+											<IconButton style={{ color: "#424242" }} onClick={this.users}>
+												<PeopleIcon />
+											</IconButton>
+										</span>
+										<span className="participantText">
+											<p>Participants</p>
+										</span>
+									</div>
+
+									{this.state.allowChat === "false" ?
+										<div className="chatIconDiv">
+											<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" >
+												<IconButton style={{ color: "#424242" }} disabled={(this.state.allowChat === "false")} >
+													<ChatIcon />
+												</IconButton>
+											</Badge></span>
+											<span className="chatIconText"><p>Chat</p></span>
+										</div>
+										:
+										<div className="chatIconDiv">
+											<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
+												<IconButton style={{ color: "#424242" }} onClick={this.openChat}  >
+													<ChatIcon />
+												</IconButton>
+											</Badge></span>
+											<span className="chatIconText"><p>Chat</p></span>
+										</div>
+									}
+
+									<div className="fullScreenDiv">
+										<span className="fullScreen">
+											<IconButton style={{ color: "#424242" }} onClick={this.toggleFullScreen}>
+												< FullscreenIcon />
+											</IconButton>
+										</span>
+										<span className="fullScreenText"><p>Full Screen</p></span>
+									</div>
+
+									{this.state.userNames1 ?
+										<div className="feedbackdiv">
+											<span className="feedback">
+												<IconButton style={{ color: "#424242" }} onClick={this.feedback}>
+													<FeedbackIcon />
+												</IconButton>
+											</span>
+											<span className="feedbackText"><p>Feedback</p></span>
+										</div> : ""
+									}
+								</div>
+
+
+
+								<div className="user-container">
+									<Modal className="user" show={this.state.showModal1} onHide={this.closeUser} style={{ zIndex: "999999" }}>
+										<Modal.Header className="userHeader">
+											<div className="userTitle">
+												<Modal.Title>Participants</Modal.Title>
+												<div className="userStatic">
+													<p>{this.state.userNumbers}</p>
+													<p>participants</p>
+												</div>
+											</div>
+											<button onClick={this.closeUser}></button>
+										</Modal.Header>
+										<Modal.Body className="userBody" style={{ overflow: "auto", overflowY: "auto", height: "500px", textAlign: "left" }} >
+											<p>{this.state.userNames}</p>
+										</Modal.Body>
+									</Modal>
+								</div>
+
+
+								<div className="feedback-container">
+									<Modal className="feedbackform" show={this.state.showModal2} onHide={this.closeFeedback}>
+										<Modal.Header className="feedbackHeader">
+											<div className="feedbackTitle">
+												<p>FeedBack Form</p>
+											</div>
+											<button onClick={this.closeFeedback}></button>
+										</Modal.Header>
+										<Modal.Body className="feedbackBody" style={{ height: "500px" }}>
+
+											<div className="containerfeedback">
+												<div className="star">
+													{stars.map((_, index) => {
+														return (
+															<FaStar
+																key={index}
+																size={24}
+																onClick={() => this.rating(index + 1)}
+																onMouseOver={() => this.hoverRating(index + 1)}
+																onMouseLeave={this.mouseLeave}
+																color={(this.state.starRating || this.state.hoverRating) > index ? colors.orange : colors.grey}
+																style={{
+																	marginRight: 10,
+																	cursor: "pointer"
+																}}
+															//  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
+
+															//  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
+															/>
+														)
+													})}
+												</div>
+												{/* <textarea 
 									   style={{ border: "1px solid #a9a9a9",
 									   borderRadius: 5,
 									   width: 300,
@@ -1076,50 +1089,59 @@ class Video extends Component {
 									    placeholder="What's your feedback"
 										onChange={e => this.handleMessage1(e)}
 									/> */}
-									<textArea id="feedback" placeholder="FeedBack" variant="contained"></textArea>
-									<button
-									 style={{ border: "1px solid #a9a9a9",
-									 borderRadius: 5,
-									 width: 300,
-									 padding: 10}}
-									 onClick={this.submitfeedback}
-									 >Submit</button>
+												<textArea id="feedback" placeholder="FeedBack" variant="contained"></textArea>
+												<button
+													style={{
+														border: "1px solid #a9a9a9",
+														borderRadius: 5,
+														width: 300,
+														padding: 10
+													}}
+													onClick={this.submitfeedback}
+												>Submit</button>
+											</div>
+
+										</Modal.Body>
+									</Modal>
 								</div>
 
-							</Modal.Body>
-						</Modal>
-					</div>
-						
-					<div className="popup-container">
-						<Modal className="popup" show={this.state.showModal} onHide={this.closeChat} style={{ zIndex: "999999" }}>
-							<Modal.Header className="modelHeader">
-								<Modal.Title>Chat</Modal.Title>
-								<button onClick={this.closeChat}></button>
-							</Modal.Header>
-							<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
-								{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
-									<div key={index} style={{textAlign: "left"}}>
-										<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
-									</div>
-								)) : <p>No message yet</p>}
-							</Modal.Body>
-							<Modal.Footer className="div-send-msg">
-								<input placeholder="Type your message here.."  variant="filled" value={this.state.message} onChange={e => this.handleMessage(e)} />
-								<button variant="contained" color="primary" onClick={this.sendMessage}></button>
-							</Modal.Footer>
-						</Modal>
-					</div>
-						
+								<div className="popup-container">
+									<Modal className="popup" show={this.state.showModal} onHide={this.closeChat} style={{ zIndex: "999999" }}>
+										<Modal.Header className="modelHeader">
+											<Modal.Title>Chat</Modal.Title>
+											<button onClick={this.closeChat}></button>
+										</Modal.Header>
+										<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
+											{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
+												<div key={index} style={{ textAlign: "left" }}>
+													<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
+												</div>
+											)) : <p>No message yet</p>}
+										</Modal.Body>
+										<Modal.Footer className="div-send-msg">
+											<input placeholder="Type your message here.." variant="filled" value={this.state.message} onChange={e => this.handleMessage(e)} />
+											<button variant="contained" color="primary" onClick={this.sendMessage}></button>
+										</Modal.Footer>
+									</Modal>
+								</div>
 
+							</div>
+									:
+									<div>
+										
+									<h1>Waiting for host to start Metting</h1>
+					
+								  </div>
+								  :""
 							
-						
-						</div>
+				
 				}
+
 			</div>
 		)
 	}
 
-	
+
 }
 
 export default Video;
