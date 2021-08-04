@@ -24,7 +24,8 @@ import { Row } from 'reactstrap'
 import Modal from 'react-bootstrap/Modal'
 import 'bootstrap/dist/css/bootstrap.css'
 import "./Video.css"
-import WaitingPage from './waitingPage';
+import { DISCLAIMER_ICON } from '../src/assests/img/images';
+import { CLOSE_ICON } from '../src/assests/img/images';
 import { Stars } from '@material-ui/icons';
 
 
@@ -81,6 +82,7 @@ class Video extends Component {
 			showModal: false,
 			showModal1: false,
 			showModal2: false,
+			showModal3: false,
 			screenAvailable: false,
 			messages: [],
 			message: "",
@@ -289,7 +291,7 @@ class Video extends Component {
 
 	togglePop() {
 		this.setState({
-			showPopup: !this.state.showPopup
+			showModal3: true
 		});
 	}
 	diff = (e) => {
@@ -301,11 +303,15 @@ class Video extends Component {
 
 	}
 
+	closeToggle = () => {
+		this.setState({ showModal3: false })
+	}
+
 	checkPermission1 = () => {
 
 		this.getPermissions()
-		console.log(this.state.userDetails, this.state.host)
-		if (this.state.userDetails.indexOf(this.state.host) !== -1 || this.state.hostIn === "false") {
+		console.log(this.state.userNames1, this.state.host)
+		if (this.state.userNames1 || this.state.hostIn === "false") {
 			console.log("Meeting Start")
 			this.getPermissions();
 		}
@@ -537,14 +543,23 @@ class Video extends Component {
 
 	connect = () => {
 
-
 		this.setState({ askForUsername: false }, () => this.getMedia());
+      
 
 	};
 
 	diff1 = () => {
+		
 		this.checkPermission1()
 	}
+	diff2 = () => {
+		console.log(this.state.userNames1,this.state.host)
+		if(this.state.userNames1){
+			console.log("test")
+		this.checkPermission1()
+		}
+	}
+	
 
 	connectToSocketServer = () => {
 		socket = io.connect(server_url, { secure: true })
@@ -563,7 +578,6 @@ class Video extends Component {
 
 
 			socket.on('user-left', (id) => {
-				console.log(id)
 				let video = document.querySelector(`[data-socket="${id}"]`)
 				if (video !== null) {
 					elms--
@@ -576,11 +590,11 @@ class Video extends Component {
 
 			socket.on('user-joined', (id, clients) => {
 				console.log(clients);
-
+              
 				socket.emit('new-user', this.state.username);
 
 				socket.on('user-array', (connections1) => {
-
+                    console.log(connections1)
 					this.setState({ userDetails: connections1 },
 						() => {
 							this.diff1(this.state.userDetails)
@@ -840,13 +854,24 @@ class Video extends Component {
 
 
 				{this.state.askForUsername === true ?
-
 					<div className="joinPage">
 
 						<div className="videoBox">
 							<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
 								width: "700px", height: "450px"
-							}}></video>
+							}}>
+							</video>
+							<div className="ctnr">
+								<div className="mic-img">
+									<IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+										{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+									</IconButton></div>
+								<div className="mic-text"><p>Mic</p></div>
+								<div className="Video-img"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
+									{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+								</IconButton></div>
+								<div className="video-Text"><p>Video</p></div>
+							</div>
 						</div>
 
 						<div className="videoContainer1">
@@ -855,16 +880,17 @@ class Video extends Component {
 								<p>Enter your username and create the meeting</p>
 								<input placeholder="username" variant="filled" value={this.state.username} onChange={e => this.handleUsername(e)} />
 								<button variant="contained" color="primary" onClick={this.connect} style={{ margin: "20px" }}>Join</button>
+								<h1>You will join meeting after hosts allows you in, so please wait till hosts allows you</h1>
 
 							</div>
 
-							<div className="videoContainer3">
+							{/* <div className="videoContainer3">
 
 								<p>Meeting link</p>
 								<input variant="filled" value={window.location.href} disable="true" />
 								<button variant="contained" color="primary" onClick={this.copyUrl} style={{ margin: "20px" }}>Copy</button>
 
-							</div>
+							</div> */}
 						</div>
 
 
@@ -1089,7 +1115,13 @@ class Video extends Component {
 									    placeholder="What's your feedback"
 										onChange={e => this.handleMessage1(e)}
 									/> */}
-												<textArea id="feedback" placeholder="FeedBack" variant="contained"></textArea>
+												<textArea id="feedback" placeholder="FeedBack" size={{
+													border: "1px solid #a9a9a9",
+													borderRadius: 5,
+													width: 300,
+													minHeight: 100,
+													padding: 10
+												}} variant="contained"></textArea>
 												<button
 													style={{
 														border: "1px solid #a9a9a9",
@@ -1125,18 +1157,337 @@ class Video extends Component {
 									</Modal>
 								</div>
 
-							</div>
-									:
-									<div>
-										
-									<h1>Waiting for host to start Metting</h1>
-					
-								  </div>
-								  :""
-							
-				
-				}
+								<div className="pop-cntr">
+									<Modal className="pop" show={this.state.showModal3} style={{ zIndex: "999999" }}>
+										<Modal.Title className="popHeader" style={{ height: "80px", width: "400px", marginTop: "10px" }}>
+											<span className="disclaimer">{DISCLAIMER_ICON}</span>
+											<span className="going">Meeting is going to end in</span>
+											<span className="time">10 minutes</span>
+											<button onClick={this.closeToggle}>{CLOSE_ICON}</button>
+										</Modal.Title>
+									</Modal>
+								</div>
 
+
+
+
+							</div>
+
+							:
+							
+							<div className="joinPage">
+
+							<div className="videoBox">
+							<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
+								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
+									objectFit: "fill", width: "700px", height: "450px"
+								}}></video>
+							</Row>
+								<div className="ctnr">
+									<div className="mic-img">
+										<IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+											{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+										</IconButton></div>
+									<div className="mic-text"><p>Mic</p></div>
+									<div className="Video-img"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
+										{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+									</IconButton></div>
+									<div className="video-Text"><p>Video</p></div>
+								</div>
+							</div>
+	
+							<div className="videoContainer1">
+								<div className="videoContainer2" >
+	
+									<p>Waiting for the host to start Meeting</p>
+								
+									
+	
+								</div>
+	
+								{/* <div className="videoContainer3">
+	
+									<p>Meeting link</p>
+									<input variant="filled" value={window.location.href} disable="true" />
+									<button variant="contained" color="primary" onClick={this.copyUrl} style={{ margin: "20px" }}>Copy</button>
+	
+								</div> */}
+							</div>
+	
+	
+						</div>
+						:
+						<div>
+							<div className="btn-down">
+							</div>
+
+							<Row id="main" className="flex-container" style={{ margin: 0, padding: 0 }}>
+								<video id="my-video" ref={this.localVideoref} autoPlay muted style={{
+									objectFit: "fill", width: "1206px", height: "510px"
+								}}></video>
+							</Row>
+
+
+							<div className="videoFooter">
+
+								<div className="videoTimer">
+									<span className="url">{this.state.userMeet}</span>
+									<span className="constant">|</span>
+									<span id="timer" ref={this.countTimers}></span>
+								</div>
+
+								{this.state.allowOnlyHostSpeak === "true" ?
+									this.state.userNames1 ?
+										<div className="micDiv">
+											<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+												{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+											</IconButton></span>
+											<span className="micText"><p>Mic</p></span>
+										</div>
+										:
+										<div className="micDiv">
+											<span className="Mic"><IconButton style={{ color: "#424242" }} disabled={(this.state.allowOnlyHostSpeak === "true")} >
+												{<MicOffIcon />}
+											</IconButton></span>
+											<span className="micText"><p>Mic</p></span>
+										</div>
+									:
+									<div className="micDiv">
+										<span className="Mic"><IconButton style={{ color: "#424242" }} onClick={this.handleAudio}>
+											{this.state.audio === true ? <MicIcon /> : <MicOffIcon />}
+										</IconButton></span>
+										<span className="micText"><p>Mic</p></span>
+									</div>
+								}
+
+								{this.state.withoutVideo === "true" ?
+									<div className="videoDiv">
+										<span className="Videocam"><IconButton style={{ color: "#424242" }} disabled={(this.state.withoutVideo === "true")} >
+											{<VideocamOffIcon />}
+
+										</IconButton>
+										</span>
+										<span className="videoText"><p>Video</p></span>
+									</div>
+									:
+									<div className="videoDiv">
+										<span className="Videocam"><IconButton style={{ color: "#424242" }} onClick={this.handleVideo}>
+											{(this.state.video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+										</IconButton></span>
+										<span className="videoText"><p>Video</p></span>
+									</div>
+								}
+
+
+								<div className="callEndDiv">
+									<span className="callEnd"><IconButton style={{ color: "#f44336" }} onClick={this.handleEndCall}>
+										<CallEndIcon />
+									</IconButton></span>
+									<span className="callEndText"><p>End Call</p></span>
+								</div>
+
+
+								{this.state.hostScreenShareOnly === "true" ?
+									this.state.userNames1 ?
+										<div className="screenShareDiv">
+											<span className="screenShare">{this.state.screenAvailable === true ?
+												<IconButton style={{ color: "#424242" }} onClick={this.handleScreen}>
+													{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+												</IconButton>
+												: null}
+											</span>
+											<span className="screenShareText"><p>Screen Share</p></span>
+										</div>
+										:
+										<div className="screenShareDiv">
+											<span className="screenShare">{this.state.screenAvailable === true ?
+												<IconButton style={{ color: "#424242" }} disabled={(this.state.hostScreenShareOnly === "true")} >
+													{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+												</IconButton>
+												: null}
+											</span>
+											<span className="screenShareText"><p>Screen Share</p></span>
+										</div>
+									:
+
+									<div className="screenShareDiv">
+										<span className="screenShare">{this.state.screenAvailable === true ?
+											<IconButton style={{ color: "#424242" }} onClick={this.handleScreen} >
+												{this.state.screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+											</IconButton>
+											: null}
+										</span>
+										<span className="screenShareText"><p>Screen Share</p></span>
+									</div>
+								}
+								<div className="participantDiv">
+									<span className="participant">
+										<IconButton style={{ color: "#424242" }} onClick={this.users}>
+											<PeopleIcon />
+										</IconButton>
+									</span>
+									<span className="participantText">
+										<p>Participants</p>
+									</span>
+								</div>
+
+								{this.state.allowChat === "false" ?
+									<div className="chatIconDiv">
+										<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" >
+											<IconButton style={{ color: "#424242" }} disabled={(this.state.allowChat === "false")} >
+												<ChatIcon />
+											</IconButton>
+										</Badge></span>
+										<span className="chatIconText"><p>Chat</p></span>
+									</div>
+									:
+									<div className="chatIconDiv">
+										<span className="chatIcon"><Badge badgeContent={this.state.newmessages} max={999} color="secondary" onClick={this.openChat}>
+											<IconButton style={{ color: "#424242" }} onClick={this.openChat}  >
+												<ChatIcon />
+											</IconButton>
+										</Badge></span>
+										<span className="chatIconText"><p>Chat</p></span>
+									</div>
+								}
+
+								<div className="fullScreenDiv">
+									<span className="fullScreen">
+										<IconButton style={{ color: "#424242" }} onClick={this.toggleFullScreen}>
+											< FullscreenIcon />
+										</IconButton>
+									</span>
+									<span className="fullScreenText"><p>Full Screen</p></span>
+								</div>
+
+								{this.state.userNames1 ?
+									<div className="feedbackdiv">
+										<span className="feedback">
+											<IconButton style={{ color: "#424242" }} onClick={this.feedback}>
+												<FeedbackIcon />
+											</IconButton>
+										</span>
+										<span className="feedbackText"><p>Feedback</p></span>
+									</div> : ""
+								}
+							</div>
+
+
+
+							<div className="user-container">
+								<Modal className="user" show={this.state.showModal1} onHide={this.closeUser} style={{ zIndex: "999999" }}>
+									<Modal.Header className="userHeader">
+										<div className="userTitle">
+											<Modal.Title>Participants</Modal.Title>
+											<div className="userStatic">
+												<p>{this.state.userNumbers}</p>
+												<p>participants</p>
+											</div>
+										</div>
+										<button onClick={this.closeUser}></button>
+									</Modal.Header>
+									<Modal.Body className="userBody" style={{ overflow: "auto", overflowY: "auto", height: "500px", textAlign: "left" }} >
+										<p>{this.state.userNames}</p>
+									</Modal.Body>
+								</Modal>
+							</div>
+
+
+							<div className="feedback-container">
+								<Modal className="feedbackform" show={this.state.showModal2} onHide={this.closeFeedback}>
+									<Modal.Header className="feedbackHeader">
+										<div className="feedbackTitle">
+											<p>FeedBack Form</p>
+										</div>
+										<button onClick={this.closeFeedback}></button>
+									</Modal.Header>
+									<Modal.Body className="feedbackBody" style={{ height: "500px" }}>
+
+										<div className="containerfeedback">
+											<div className="star">
+												{stars.map((_, index) => {
+													return (
+														<FaStar
+															key={index}
+															size={24}
+															onClick={() => this.rating(index + 1)}
+															onMouseOver={() => this.hoverRating(index + 1)}
+															onMouseLeave={this.mouseLeave}
+															color={(this.state.starRating || this.state.hoverRating) > index ? colors.orange : colors.grey}
+															style={{
+																marginRight: 10,
+																cursor: "pointer"
+															}}
+														//  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
+
+														//  color={(this.state.starRating || this.state.hoverRating)>index ? colors.orange:colors.grey}
+														/>
+													)
+												})}
+											</div>
+											{/* <textarea 
+							 style={{ border: "1px solid #a9a9a9",
+							 borderRadius: 5,
+							 width: 300,
+							 minHeight: 100,
+							 padding: 10}}
+							  placeholder="What's your feedback"
+							  onChange={e => this.handleMessage1(e)}
+						  /> */}
+											<textArea id="feedback" placeholder="FeedBack" variant="contained"></textArea>
+											<button
+												style={{
+													border: "1px solid #a9a9a9",
+													borderRadius: 5,
+													width: 300,
+													padding: 10
+												}}
+												onClick={this.submitfeedback}
+											>Submit</button>
+										</div>
+
+									</Modal.Body>
+								</Modal>
+							</div>
+
+							<div className="popup-container">
+								<Modal className="popup" show={this.state.showModal} onHide={this.closeChat} style={{ zIndex: "999999" }}>
+									<Modal.Header className="modelHeader">
+										<Modal.Title>Chat</Modal.Title>
+										<button onClick={this.closeChat}></button>
+									</Modal.Header>
+									<Modal.Body style={{ overflow: "auto", overflowY: "auto", height: "400px", textAlign: "left" }} >
+										{this.state.messages.length > 0 ? this.state.messages.map((item, index) => (
+											<div key={index} style={{ textAlign: "left" }}>
+												<p style={{ wordBreak: "break-all" }}><b>{item.sender}</b>: {item.data}</p>
+											</div>
+										)) : <p>No message yet</p>}
+									</Modal.Body>
+									<Modal.Footer className="div-send-msg">
+										<input placeholder="Type your message here.." variant="filled" value={this.state.message} onChange={e => this.handleMessage(e)} />
+										<button variant="contained" color="primary" onClick={this.sendMessage}></button>
+									</Modal.Footer>
+								</Modal>
+							</div>
+
+							<div className="pop-cntr">
+								<Modal className="pop" show={this.state.showModal3} style={{ zIndex: "999999" }}>
+									<Modal.Title className="popHeader" style={{ height: "80px", width: "400px" }}>
+										<span className="disclaimer">{DISCLAIMER_ICON}</span>
+										<span className="going">Meeting is going to end in</span>
+										<span className="time">10 minutes</span>
+										<button onClick={this.closeToggle}>{CLOSE_ICON}</button>
+									</Modal.Title>
+								</Modal>
+							</div>
+
+
+
+
+						</div>
+
+
+				}
 			</div>
 		)
 	}
